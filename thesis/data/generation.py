@@ -6,6 +6,7 @@ from typing import Callable, Union
 
 
 def _rowNorm(matrix: Union[np.array, np.array_equiv]):
+    """Normalize the rows of a 2d numpy array (matrix)"""
     row_sums = matrix.sum(axis=1)
     new_matrix = matrix / row_sums[:, np.newaxis]
     return new_matrix
