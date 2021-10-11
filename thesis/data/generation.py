@@ -66,7 +66,7 @@ def _generate_time_series(
         If A is not row-normalized, then this should be some sigmoid function like tanh
         Otherwise, the series will all blow up and overflow errors will occur
     save_path : str, optional
-        Where to save the resulting time series to, by default None
+        FOLDER to save the resulting time series to, by default None
         If None, does not save
 
     Returns
@@ -84,9 +84,14 @@ def _generate_time_series(
     df = pd.DataFrame(arr, columns=cols)
 
     if save_path is not None:
-        df.to_csv(save_path)
+        save_path += (
+            "/" if save_path[-1] != "/" else ""
+        )  # Make sure we save into the folder
+        df.to_csv(save_path + "data.csv")
+        np.save(save_path + "A.npy", A)
+        np.save(save_path + "B.npy", B)
 
-    return df
+    return df, A, B
 
 
 # Okay, so this is a bit of a hunch, but I think making the adj. matrix a contraction mapping
@@ -101,7 +106,24 @@ if __name__ == "__main__":
     x0 = np.array([1, 3, 4, 5, 6])
     A = np.random.rand(50, 50)
     B = np.random.rand(50, 50)
-    df = _generate_time_series(A, B, T=1000, N=50, f=np.tanh)
+    df = _generate_time_series(A, B, T=1000, N=50, f=np.tanh, save_path="testdata")
+
+    testDict = {"A": A, "B": B, "dataset": df}
+
+    print(type(testDict["A"]))
+    print(type(testDict["B"]))
+    print(type(testDict["dataset"]))
+
+    print(testDict)
+
+    np.save("test_A.npy", A)
+    np.save("test_B.npy", B)
+
+    load_A = np.load("test_A.npy")
+    load_B = np.load("test_B.npy")
+
+    assert A.all() == load_A.all()
+    assert B.all() == load_B.all()
 
     fig = px.line(df, x=df.index, y=[df["x1"], df["x50"]])
     fig.show()
