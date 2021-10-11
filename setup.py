@@ -11,9 +11,9 @@ setup(
     keywords="data analysis statistics optimization network graph \
         research reproducibility classical machine learning AI ML science",
     license="LICENSE.md",
-    description="Learning graph (network) structures on market data",
+    description="Learning graph (network) structures on time series data",
     long_description=open("README.md").read(),
-    py_modules=["thesis"],
+    py_modules=["thesis", "thesis.data"],
     install_requires=[
         "aiohttp",
         "aiolimiter",
@@ -34,7 +34,7 @@ setup(
         "openpyxl",
         "pandas",
         "pandasql",
-	"plotly==5.3.1",
+        "plotly==5.3.1",
         "python-dotenv",
         "pytz",
         "us==2.0.2",
