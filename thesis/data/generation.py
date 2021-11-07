@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.lib.npyio import save
 import pandas as pd
 import plotly.express as px
 
@@ -89,8 +90,7 @@ def _generate_time_series(
             "/" if save_path[-1] != "/" else ""
         )  # Make sure we save into the folder
         df.to_csv(save_path + "data.csv")
-        np.save(save_path + "A.npy", A)
-        np.save(save_path + "B.npy", B)
+        np.savez(save_path, A=A, B=B)
 
     return df, A, B
 
@@ -108,23 +108,6 @@ if __name__ == "__main__":
     A = np.random.rand(50, 50)
     B = np.random.rand(50, 50)
     df = _generate_time_series(A, B, T=1000, N=50, f=np.tanh, save_path="testdata")
-
-    testDict = {"A": A, "B": B, "dataset": df}
-
-    print(type(testDict["A"]))
-    print(type(testDict["B"]))
-    print(type(testDict["dataset"]))
-
-    print(testDict)
-
-    np.save("test_A.npy", A)
-    np.save("test_B.npy", B)
-
-    load_A = np.load("test_A.npy")
-    load_B = np.load("test_B.npy")
-
-    assert A.all() == load_A.all()
-    assert B.all() == load_B.all()
 
     fig = px.line(df, x=df.index, y=[df["x1"], df["x50"]])
     fig.show()
