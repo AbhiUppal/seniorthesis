@@ -13,7 +13,8 @@ setup(
     license="LICENSE.md",
     description="Learning graph (network) structures on time series data",
     long_description=open("README.md").read(),
-    py_modules=["thesis", "thesis.data", "thesis.optim"],
+    py_modules=["thesis", "thesis.data", "thesis.data.testdata", "thesis.optim"],
+    package_data={"": ["*.csv", "*.npz", "*.npy"]},
     install_requires=[
         "aiohttp",
         "aiolimiter",
