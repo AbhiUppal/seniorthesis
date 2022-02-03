@@ -86,28 +86,20 @@ def _generate_time_series(
     df = pd.DataFrame(arr, columns=cols)
 
     if save_path is not None:
-        save_path += (
-            "/" if save_path[-1] != "/" else ""
-        )  # Make sure we save into the folder
-        df.to_csv(save_path + "data.csv")
-        np.savez(save_path, A=A, B=B)
+        df.to_csv(save_path + "_data.csv")
+        np.savez(save_path + "_AB", A=A, B=B)
 
     return df, A, B
 
 
-# Okay, so this is a bit of a hunch, but I think making the adj. matrix a contraction mapping
-# by normalizing the rows is a reasonable assumption. For example, assuming there is a stationary distribution
-# then the contraction would represent convergence to the stationary distribution
-# plus some noise, which should generate the behavior we're looking for
-# Essentially, we need constraints on the adj. matrix to ensure stationarity
-# Or, use a sigmoid function to constrain like tanh
+def main():
+    np.random.seed = 123456
+    A = np.random.rand(10, 10)
+    B = np.random.rand(10, 10)
+    df = _generate_time_series(
+        A, B, T=1000, N=A.shape[0], f=np.tanh, save_path="testdata/small"
+    )
+
 
 if __name__ == "__main__":
-    np.random.seed = 123456
-    x0 = np.array([1, 3, 4, 5, 6])
-    A = np.random.rand(50, 50)
-    B = np.random.rand(50, 50)
-    df = _generate_time_series(A, B, T=1000, N=50, f=np.tanh, save_path="testdata")
-
-    fig = px.line(df, x=df.index, y=[df["x1"], df["x50"]])
-    fig.show()
+    main()
