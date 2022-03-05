@@ -28,6 +28,65 @@ def tanh_deriv(x: Union[int, float, np.array_equiv]):
     return 1 - np.tanh(np.tanh(x))
 
 
+# -----------------------------
+# Callables for Multiprocessing
+# -----------------------------
+
+
+class CopierShell:
+    def __init__(
+        self,
+        A: np.array_equiv,
+        B: np.array_equiv,
+        data: pd.DataFrame,
+        t0: int = 0,
+        T: int = None,
+        mu: Callable = np.tanh,
+        cache: dict = None,
+    ):
+        self.A = A
+        self.B = B
+        self.data = data
+        self.t0 = t0
+        self.T = T
+        self.mu = mu
+        self.cache = cache
+
+
+class CopierGradA(CopierShell):
+    def __init__(*args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, ij: tuple):
+        return gradient_ij(
+            A=self.A,
+            B=self.B,
+            data=self.B,
+            ij=ij,
+            t0=self.t0,
+            T=self.T,
+            mu=self.mu,
+            cache=self.cache,
+        )["A"]
+
+
+class CopierGradB(CopierShell):
+    def __init__(*args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, ij: tuple):
+        return gradient_ij(
+            A=self.A,
+            B=self.B,
+            data=self.B,
+            ij=ij,
+            t0=self.t0,
+            T=self.T,
+            mu=self.mu,
+            cache=self.cache,
+        )["B"]
+
+
 # -----------------------
 # Likelihood Calculations
 # -----------------------
@@ -136,8 +195,7 @@ def gradient_ij(
     A: np.array_equiv,
     B: np.array_equiv,
     data: pd.DataFrame,
-    i: int,
-    j: int,
+    ij: tuple,
     t0: int = 0,
     T: int = None,
     mu: Callable = np.tanh,
@@ -147,10 +205,13 @@ def gradient_ij(
     T = len(data) - 1 if T is None else T
     t0 = 0 if t0 is None else t0
 
+    i = ij[0]
+    j = ij[1]
+
     derivative = cache.get("derivative", None)
     BBT_inv = cache.get("BBT_inv", None)
-    B_inv = cache.get("B_inv")
-    BT_inv = cache.get("BT_inv")
+    B_inv = cache.get("B_inv", None)
+    BT_inv = cache.get("BT_inv", None)
 
     # Caclulating the gradients
     A_grad_ij = 0
@@ -200,6 +261,7 @@ def gradient(
     t0: int = 0,
     T: int = None,
     mu: Callable = np.tanh,
+    parallel: bool = False,
 ) -> np.array_equiv:
 
     # TODO: Multiprocessing implementation of this function to defer to HPC
@@ -231,14 +293,17 @@ def gradient(
     grad_a = np.zeros(shape)
     grad_b = np.zeros(shape)
 
-    for i in range(shape[0]):
-        for j in range(shape[1]):
-            grad_a[i, j] = gradient_ij(
-                A=A, B=B, data=data, i=i, j=j, t0=t0, T=T, cache=cache
-            )["A"]
-            grad_b[i, j] = gradient_ij(
-                A=A, B=B, data=data, i=i, j=j, t0=t0, T=T, cache=cache
-            )["B"]
+    if not parallel:
+        for i in range(shape[0]):
+            for j in range(shape[1]):
+                grad_a[i, j] = gradient_ij(
+                    A=A, B=B, data=data, ij=(i, j), t0=t0, T=T, cache=cache
+                )["A"]
+                grad_b[i, j] = gradient_ij(
+                    A=A, B=B, data=data, ij=(i, j), t0=t0, T=T, cache=cache
+                )["B"]
+    else:
+        pass
 
     res = {"A": grad_a, "B": grad_b}
 
