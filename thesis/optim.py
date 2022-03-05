@@ -250,6 +250,66 @@ def gradient(
 # -----------------
 
 
+def optim(
+    A_guess: np.array_equiv,
+    B_guess: np.array_equiv,
+    data: pd.DataFrame,
+    epsilon: float = 0.01,
+    lr: float = 1e-4,
+    max_steps: int = 100,
+    t0: int = 0,
+    T: int = None,
+    mu: Callable = np.tanh,
+    print_diffs: bool = True,
+):
+    assert mu in [np.tanh, sigmoid], "mu must be either np.tanh or sigmoid"
+
+    t0 = 0 if t0 is None else t0
+    T = len(data) if T is None else T
+
+    A_prev = 0
+    B_prev = 0
+    A = A_guess
+    B = B_guess
+
+    step = 0
+
+    shape = A.shape
+    expected_diff_norm = epsilon * shape[0] * shape[1]
+
+    # Optimize A first
+    print("Optimizing A")
+    while (
+        np.any(A - A_prev) > epsilon or np.any(B - A_prev) > epsilon
+    ) or step >= max_steps:
+        grads = gradient(A=A, B=B, data=data, t0=t0, T=T, mu=mu)
+        grad_a = grads["A"]
+        grad_b = grads["B"]
+
+        A_prev = A
+        B_prev = B
+
+        A = A_prev - lr * grad_a
+        B = B_prev - lr * grad_b
+
+        step += 1
+
+        if print_diffs:
+            A_diff = A - A_prev
+            B_diff = B - B_prev
+
+            A_diff_norm = np.linalg.norm(A_diff)
+            B_diff_norm = np.linalg.norm(B_diff)
+
+            print(
+                f"Step {step} | A_diff norm: {A_diff_norm:.5f} | B_diff norm: {B_diff_norm:.5f} | Expected Norm: {expected_diff_norm}"
+            )
+
+    res = {"A": A_guess, "B": B_guess, "A_optim": A, "B_optim": B}
+
+    return res
+
+
 # -----------------
 # Questions
 # -----------------
@@ -263,9 +323,10 @@ def main():
     B = AB["B"]
     data = pd.read_csv("data/testdata/small_data.csv")
 
-    test = likelihood(data=data, A=A, B=B, mu=np.tanh, t0=0, T=100)
+    test = likelihood(data=data, A=A, B=B, mu=np.tanh, t0=0, T=1000)
 
     test_grad = gradient(A=A, B=B, data=data, t0=0, T=100, mu=np.tanh)
+    print(test)
     print(test_grad)
 
 
