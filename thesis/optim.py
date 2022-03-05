@@ -3,6 +3,7 @@ import pandas as pd
 import time
 
 from math import pi
+from multiprocessing import cpu_count, Pool
 from typing import Callable, Union
 from utils import timer
 
@@ -54,14 +55,14 @@ class CopierShell:
 
 
 class CopierGradA(CopierShell):
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def __call__(self, ij: tuple):
         return gradient_ij(
             A=self.A,
             B=self.B,
-            data=self.B,
+            data=self.data,
             ij=ij,
             t0=self.t0,
             T=self.T,
@@ -71,14 +72,14 @@ class CopierGradA(CopierShell):
 
 
 class CopierGradB(CopierShell):
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def __call__(self, ij: tuple):
         return gradient_ij(
             A=self.A,
             B=self.B,
-            data=self.B,
+            data=self.data,
             ij=ij,
             t0=self.t0,
             T=self.T,
@@ -155,7 +156,6 @@ def likelihood_t(
     return L
 
 
-@timer
 def likelihood(
     data,
     A: np.array_equiv,
@@ -303,7 +303,21 @@ def gradient(
                     A=A, B=B, data=data, ij=(i, j), t0=t0, T=T, cache=cache
                 )["B"]
     else:
-        pass
+        n = shape[0]
+        indices = [(i, j) for i in range(n) for j in range(n)]
+
+        with Pool(cpu_count() - 2) as p:
+            grad_a_list = p.map(
+                CopierGradA(A=A, B=B, data=data, t0=t0, T=T, mu=mu, cache=cache),
+                indices,
+            )
+            grad_b_list = p.map(
+                CopierGradB(A=A, B=B, data=data, t0=t0, T=T, mu=mu, cache=cache),
+                indices,
+            )
+
+        grad_a = np.reshape(np.array(grad_a_list), (-1, n))
+        grad_b = np.reshape(np.array(grad_b_list), (-1, n))
 
     res = {"A": grad_a, "B": grad_b}
 
@@ -321,11 +335,12 @@ def optim(
     data: pd.DataFrame,
     epsilon: float = 0.01,
     lr: float = 1e-4,
-    max_steps: int = 100,
+    max_steps: int = 5,
     t0: int = 0,
     T: int = None,
     mu: Callable = np.tanh,
     print_diffs: bool = True,
+    parallel: bool = True,
 ):
     assert mu in [np.tanh, sigmoid], "mu must be either np.tanh or sigmoid"
 
@@ -340,14 +355,14 @@ def optim(
     step = 0
 
     shape = A.shape
-    expected_diff_norm = epsilon * shape[0] * shape[1]
+    expected_diff_norm = epsilon / np.sqrt(shape[0])
+    likelihood_step = likelihood(data=data, A=A, B=B, mu=mu, debug=False)
 
-    # Optimize A first
-    print("Optimizing A")
+    print(f"Starting optimization. Initial likelihood {likelihood_step:,.1f}")
     while (
         np.any(A - A_prev) > epsilon or np.any(B - A_prev) > epsilon
-    ) or step >= max_steps:
-        grads = gradient(A=A, B=B, data=data, t0=t0, T=T, mu=mu)
+    ) and step <= max_steps:
+        grads = gradient(A=A, B=B, data=data, t0=t0, T=T, mu=mu, parallel=parallel)
         grad_a = grads["A"]
         grad_b = grads["B"]
 
@@ -360,6 +375,7 @@ def optim(
         step += 1
 
         if print_diffs:
+            likelihood_step = likelihood(data=data, A=A, B=B, mu=mu, debug=False)
             A_diff = A - A_prev
             B_diff = B - B_prev
 
@@ -367,7 +383,7 @@ def optim(
             B_diff_norm = np.linalg.norm(B_diff)
 
             print(
-                f"Step {step} | A_diff norm: {A_diff_norm:.5f} | B_diff norm: {B_diff_norm:.5f} | Expected Norm: {expected_diff_norm}"
+                f"Step {step} | A_diff norm: {A_diff_norm:.5f} | B_diff norm: {B_diff_norm:.5f} | Expected Norm: {expected_diff_norm} | Likelihood: {likelihood_step:,.1f}"
             )
 
     res = {"A": A_guess, "B": B_guess, "A_optim": A, "B_optim": B}
@@ -381,6 +397,8 @@ def optim(
 
 # How to use scipy optimization in this context?
 
+# TODO: The B gradient seems to be blowing up. Determine why.
+
 
 def main():
     AB = np.load("data/testdata/small_AB.npz")
@@ -388,11 +406,23 @@ def main():
     B = AB["B"]
     data = pd.read_csv("data/testdata/small_data.csv")
 
-    test = likelihood(data=data, A=A, B=B, mu=np.tanh, t0=0, T=1000)
+    test_grad = gradient(A=A, B=B, data=data, t0=0, mu=np.tanh, parallel=True)
 
-    test_grad = gradient(A=A, B=B, data=data, t0=0, T=100, mu=np.tanh)
-    print(test)
-    print(test_grad)
+    test_optim = optim(
+        A_guess=A,
+        B_guess=B,
+        data=data,
+        epsilon=0.01,
+        lr=1e-2,
+        max_steps=5,
+        t0=0,
+        T=None,
+        mu=np.tanh,
+        print_diffs=True,
+        parallel=True,
+    )
+
+    print(test_optim)
 
 
 if __name__ == "__main__":
