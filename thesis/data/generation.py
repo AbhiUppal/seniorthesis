@@ -92,12 +92,52 @@ def _generate_time_series(
     return df, A, B
 
 
+def _step_constant(
+    x0: Union[np.array, np.array_equiv],
+    A: Union[np.array, np.array_equiv],
+    c: Union[float, int],
+    f: Callable[[np.array], np.array] = None,
+) -> np.array:
+    n = len(x0)
+    I = np.identity(n)
+    eta = np.random.multivariate_normal(mean=np.zeros(n), cov=I)
+    if f is None:
+        x1 = np.matmul(A, x0) + c * eta
+    else:
+        x1 = f(np.matmul(A, x0)) + c * eta
+    return x1
+
+
+def _generate_time_series_constant(
+    A: np.array,
+    c: Union[float, int],
+    N: int,
+    T: int,
+    mu: Callable = None,
+    save_path: str = None,
+):
+    x = []
+    x.append(np.random.rand(N))
+    for i in range(1, T):
+        x.append(_step_constant(x0=x[i - 1], A=A, c=c, f=mu))
+
+    cols = ["x" + str(i + 1) for i in range(N)]
+    arr = np.array(x)
+    df = pd.DataFrame(arr, columns=cols)
+
+    if save_path is not None:
+        df.to_csv(save_path + "_data.csv")
+        np.savez(save_path + "_Ac", A=A, c=c)
+
+    return df, A, c
+
+
 def main():
     np.random.seed = 123456
     A = np.random.rand(10, 10)
-    B = np.random.rand(10, 10)
-    df = _generate_time_series(
-        A, B, T=1000, N=A.shape[0], f=np.tanh, save_path="testdata/small"
+    c = 1
+    df = _generate_time_series_constant(
+        A=A, c=c, T=1000, N=A.shape[0], mu=np.tanh, save_path="testdata/small_const"
     )
 
 
