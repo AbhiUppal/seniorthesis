@@ -105,8 +105,6 @@ def likelihood(
 
     L = L_term_1 + L_term_2 + L_term_3
 
-    timerange = range(t0, T - 1)
-
     return L
 
 
@@ -248,9 +246,10 @@ def optim(
             print(
                 f"Step {step} | A_diff norm: {A_diff_norm:.5f} | Expected Norm: {expected_diff_norm} | Likelihood: {likelihood_step:,.1f}"
             )
+    print(f"End optimization. Final likelhihood {likelihood_step:,.1f}")
 
     res = {
-        "A": A_guess,
+        "A_guess": A_guess,
         "A_optim": A,
     }
 
