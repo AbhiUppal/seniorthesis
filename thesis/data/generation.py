@@ -129,7 +129,7 @@ def _generate_time_series_constant(
         df.to_csv(save_path + "_data.csv")
         np.savez(save_path + "_Ac", A=A, c=c)
 
-    return df, A, c
+    return df
 
 
 def main():
