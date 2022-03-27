@@ -13,6 +13,6 @@ def timer(f):
         res = f(*args, **kwargs)
         tf = time.time()
         print(f"Time for function {f.__name__} to run: {tf - t0:.1f} seconds.")
-        return res
+        return res, tf - t0
 
     return wrapper
