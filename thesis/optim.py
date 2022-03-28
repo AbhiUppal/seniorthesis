@@ -219,9 +219,12 @@ def gradient_ij(
     n = A.shape[0]
     for t in range(t0, T - 1):
         # Terms to pre-compute
-        x_now = data.iloc[t, 1:]
-        x_next = data.iloc[t + 1, 1:]
-
+        if len(data.iloc[t, :]) > n:
+            x_now = data.iloc[t, 1:]
+            x_next = data.iloc[t + 1, 1:]
+        else:
+            x_now = data.iloc[t, :]
+            x_next = data.iloc[t + 1, :]
         Ax = np.matmul(A, x_now)
         predicted_term = x_next - mu(Ax)  # x_{t+1} - \mu(Ax_t)
 
@@ -263,8 +266,6 @@ def gradient(
     mu: Callable = np.tanh,
     parallel: bool = False,
 ) -> np.array_equiv:
-
-    # TODO: Multiprocessing implementation of this function to defer to HPC
 
     assert mu in [np.tanh, sigmoid], "mu must be either np.tanh or sigmoid"
 
