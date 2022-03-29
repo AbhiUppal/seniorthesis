@@ -6,11 +6,11 @@
 
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 
 from glob import glob
 from optim_single import optim, likelihood
 from typing import Union, Callable
-from utils import timer
 
 
 def one_optim(
@@ -188,13 +188,39 @@ def data_to_npz():
 # ------------------
 
 
+def heatmap_sd_guesses(show: bool = False):
+    fname = "experiment-results/global_hm_matrices.npz"
+    result = np.load(fname)
+    std_A = result["std_A"]
+
+    hm = go.Figure(data=go.Heatmap(z=std_A))
+
+    if show:
+        hm.show()
+
+    return hm
+
+
+def heatmap_mean_minus_true(show: bool = False):
+    fname = "experiment-results/global_hm_matrices.npz"
+    result = np.load(fname)
+    diff = result["mean_A"] - result["true_A"]
+
+    hm = go.Figure(data=go.Heatmap(z=diff))
+
+    if show:
+        hm.show()
+
+    return hm
+
+
 # ----
 # Main
 # ----
 
 
 def main():
-    data_to_npz()
+    heatmap_mean_minus_true(show=True)
 
 
 if __name__ == "__main__":

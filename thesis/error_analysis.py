@@ -15,13 +15,14 @@
 #   Output it all to a CSV.
 # TODO: Function that computes, for any one run, the number of
 
-import json
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 
 from experiment import experiment_data_generation
 from glob import glob
 from optim_single import optim, likelihood
+from scipy.stats import t
 from typing import Union, Callable
 from utils import timer
 
@@ -312,13 +313,111 @@ def data_to_csv():
 # ------------------
 
 
+def error_bars_optim(show: bool = False):
+    """Frobenius norm of the error matrix for each value of c, error bar plot"""
+    number_trials = 10
+    critical_t = t.ppf(0.975, df=number_trials - 1)
+
+    fname = "experiment-results/error_aggregated.csv"
+    data = pd.read_csv(fname).drop(columns=["Unnamed: 0"])
+
+    data["margin_error_optim_norm"] = (
+        critical_t * data["sd_error_optim_norm"] / np.sqrt(number_trials - 1)
+    )
+
+    fig = go.Figure(
+        data=go.Scatter(
+            x=data["c"],
+            y=data["mean_error_optim_norm"],
+            error_y=dict(
+                type="data", array=data["margin_error_optim_norm"], visible=True
+            ),
+        )
+    )
+
+    if show:
+        fig.show()
+
+    return fig
+
+
+def error_bars_params_improved(show: bool = False):
+    """Number of improved parameters for each value of c, error bars"""
+    number_trials = 10
+    critical_t = t.ppf(0.975, df=number_trials - 1)
+
+    fname = "experiment-results/error_aggregated.csv"
+    data = pd.read_csv(fname).drop(columns=["Unnamed: 0"])
+
+    data["margin_error_improved"] = (
+        critical_t * data["sd_improved"] / np.sqrt(number_trials - 1)
+    )
+
+    fig = go.Figure(
+        data=go.Scatter(
+            x=data["c"],
+            y=data["mean_improved"],
+            error_y=dict(
+                type="data", array=data["margin_error_improved"], visible=True
+            ),
+        )
+    )
+
+    if show:
+        fig.show()
+
+    return fig
+
+
+def heatmap_errors(show: bool = False):
+    # Load results from experiment c=1, T=1000, N=10
+    # Trial number 2 (index 1)
+    fname = "experiment-outputs/error_N10_c1_T1000_Ac_3_result.npz"
+    result = np.load(fname)
+
+    error_guess = result["error_guess"]
+    error_optim = result["error_optim"]
+
+    hm1 = go.Figure(data=go.Heatmap(z=error_guess))
+
+    hm1.update_layout(
+        coloraxis_colorbar=dict(title="Error", tickvals=[-1, -0.5, 0, 0.5, 1])
+    )
+
+    hm2 = go.Figure(data=go.Heatmap(z=error_optim))
+
+    hm2.update_layout(
+        coloraxis_colorbar=dict(title="Error", tickvals=[-1, -0.5, 0, 0.5, 1])
+    )
+
+    hm3 = go.Figure(data=go.Heatmap(z=error_optim - error_guess))
+
+    if show:
+        hm1.show()
+        hm2.show()
+        hm3.show()
+
+
+"""
+res = {
+        "guess_A": guess_A,
+        "optim_A": optim_A,
+        "true_A": true_A,
+        "true_likelihood": true_likelihood,
+        "optim_likelihood": optim_likelihood,
+        "guess_likelihood": guess_likelihood,
+        "error_guess": error_guess,
+        "error_optim": error_optim,
+    }
+"""
+
 # ----
 # Main
 # ----
 
 
 def main():
-    data_to_csv()
+    heatmap_errors(show=True)
 
 
 if __name__ == "__main__":

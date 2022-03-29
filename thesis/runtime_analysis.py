@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import time
 
 from data.generation import _generate_time_series
 from experiment import experiment_data_generation
 from optim import gradient
+from scipy.stats import t
 from utils import timer
 
 # ---------------
@@ -65,7 +67,7 @@ def compute_runtimes() -> pd.DataFrame:
         means.append(np.mean(times))
         sds.append(np.std(times))
         log_means.append(np.mean(log_times))
-        log_sds.append(np.mean(log_times))
+        log_sds.append(np.std(log_times))
         Ns.append(N)
 
     output_df = pd.DataFrame(
@@ -83,13 +85,38 @@ def compute_runtimes() -> pd.DataFrame:
     return output_df
 
 
+# -------------
+# Data Analysis
+# -------------
+
+
+def runtime_plot(save_path: str = None):
+    # Read in the data
+    runtimes = pd.read_csv("experiment-results/runtimes.csv")
+
+    t_critical = t.ppf(0.975, df=24)
+    runtimes["margin_error"] = t_critical * runtimes["sd_runtime"] / np.sqrt(25)
+    print(runtimes.head(10))
+
+    fig = go.Figure(
+        data=go.Scatter(
+            x=runtimes["N"],
+            y=runtimes["mean_runtime"],
+            error_y=dict(type="data", array=runtimes["margin_error"], visible=True),
+        )
+    )
+
+    fig.show()
+    return fig
+
+
 # ----
 # Main
 # ----
 
 
 def main():
-    compute_runtimes()
+    runtime_plot()
 
 
 if __name__ == "__main__":
