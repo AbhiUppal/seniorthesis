@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-import time
 
 from data.generation import _generate_time_series
 from experiment import experiment_data_generation
@@ -96,17 +95,33 @@ def runtime_plot(save_path: str = None):
 
     t_critical = t.ppf(0.975, df=24)
     runtimes["margin_error"] = t_critical * runtimes["sd_runtime"] / np.sqrt(25)
-    print(runtimes.head(10))
 
     fig = go.Figure(
         data=go.Scatter(
             x=runtimes["N"],
             y=runtimes["mean_runtime"],
             error_y=dict(type="data", array=runtimes["margin_error"], visible=True),
+            line=dict(color="black", width=2, dash="dash"),
+            text=runtimes["mean_runtime"].apply(lambda x: "{:,.1f}".format(x)),
+            marker_size=9,
+            name="Runtime",
         )
     )
 
-    fig.show()
+    fig.update_layout(
+        font_family="Glacial Indifference",
+        font_color="black",
+        font_size=18,
+        yaxis_title="Number of parameters improved",
+        xaxis_title="Value of c",
+        legend_title_font_color="black",
+        template="plotly_white",
+    )
+
+    fig.update_traces(textposition="bottom right", textfont_size=12)
+
+    if save_path is not None:
+        fig.write_image(save_path, height=1080, width=1920, scale=2, format="png")
     return fig
 
 
@@ -116,7 +131,7 @@ def runtime_plot(save_path: str = None):
 
 
 def main():
-    runtime_plot()
+    runtime_plot(save_path="figures/runtime.png")
 
 
 if __name__ == "__main__":

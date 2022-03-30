@@ -188,7 +188,7 @@ def data_to_npz():
 # ------------------
 
 
-def heatmap_sd_guesses(show: bool = False):
+def heatmap_sd_guesses(show: bool = False, save_path: str = None):
     fname = "experiment-results/global_hm_matrices.npz"
     result = np.load(fname)
     std_A = result["std_A"]
@@ -198,10 +198,13 @@ def heatmap_sd_guesses(show: bool = False):
     if show:
         hm.show()
 
+    if save_path is not None:
+        hm.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+
     return hm
 
 
-def heatmap_mean_minus_true(show: bool = False):
+def heatmap_mean_minus_true(show: bool = False, save_path: str = None):
     fname = "experiment-results/global_hm_matrices.npz"
     result = np.load(fname)
     diff = result["mean_A"] - result["true_A"]
@@ -210,6 +213,9 @@ def heatmap_mean_minus_true(show: bool = False):
 
     if show:
         hm.show()
+
+    if save_path is not None:
+        hm.write_image(save_path, height=1080, width=1920, scale=2, format="png")
 
     return hm
 
@@ -220,7 +226,10 @@ def heatmap_mean_minus_true(show: bool = False):
 
 
 def main():
-    heatmap_mean_minus_true(show=True)
+    heatmap_sd_guesses(show=True, save_path="figures/heatmap_sd_guesses.png")
+    heatmap_mean_minus_true(
+        show=True, save_path="figures/heatmap_average_minus_true.png"
+    )
 
 
 if __name__ == "__main__":

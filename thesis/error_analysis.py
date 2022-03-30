@@ -313,7 +313,7 @@ def data_to_csv():
 # ------------------
 
 
-def error_bars_optim(show: bool = False):
+def error_bars_optim(show: bool = False, save_path: str = None):
     """Frobenius norm of the error matrix for each value of c, error bar plot"""
     number_trials = 10
     critical_t = t.ppf(0.975, df=number_trials - 1)
@@ -332,16 +332,30 @@ def error_bars_optim(show: bool = False):
             error_y=dict(
                 type="data", array=data["margin_error_optim_norm"], visible=True
             ),
+            line=dict(color="black", width=2, dash="dash"),
         )
+    )
+
+    fig.update_layout(
+        font_family="Glacial Indifference",
+        font_color="black",
+        font_size=18,
+        yaxis_title=r"$\left\lVert \hat{E} \right\rVert_F$",
+        xaxis_title="Value of c",
+        legend_title_font_color="black",
+        template="plotly_white",
     )
 
     if show:
         fig.show()
 
+    if save_path is not None:
+        fig.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+
     return fig
 
 
-def error_bars_params_improved(show: bool = False):
+def error_bars_params_improved(show: bool = False, save_path: str = None):
     """Number of improved parameters for each value of c, error bars"""
     number_trials = 10
     critical_t = t.ppf(0.975, df=number_trials - 1)
@@ -360,16 +374,31 @@ def error_bars_params_improved(show: bool = False):
             error_y=dict(
                 type="data", array=data["margin_error_improved"], visible=True
             ),
+            line=dict(color="black", width=2, dash="dash"),
+            marker_size=10,
         )
+    )
+
+    fig.update_layout(
+        font_family="Glacial Indifference",
+        font_color="black",
+        font_size=18,
+        yaxis_title="Number of parameters improved",
+        xaxis_title="Value of c",
+        legend_title_font_color="black",
+        template="plotly_white",
     )
 
     if show:
         fig.show()
 
+    if save_path is not None:
+        fig.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+
     return fig
 
 
-def heatmap_errors(show: bool = False):
+def heatmap_errors(show: bool = False, save_path: str = None):
     # Load results from experiment c=1, T=1000, N=10
     # Trial number 2 (index 1)
     fname = "experiment-outputs/error_N10_c1_T1000_Ac_3_result.npz"
@@ -397,19 +426,11 @@ def heatmap_errors(show: bool = False):
         hm2.show()
         hm3.show()
 
+    if save_path is not None:
+        hm3.write_image(save_path, height=1080, width=1920, scale=2, format="png")
 
-"""
-res = {
-        "guess_A": guess_A,
-        "optim_A": optim_A,
-        "true_A": true_A,
-        "true_likelihood": true_likelihood,
-        "optim_likelihood": optim_likelihood,
-        "guess_likelihood": guess_likelihood,
-        "error_guess": error_guess,
-        "error_optim": error_optim,
-    }
-"""
+    return hm1, hm2, hm3
+
 
 # ----
 # Main
@@ -417,7 +438,11 @@ res = {
 
 
 def main():
-    heatmap_errors(show=True)
+    error_bars_optim(show=False, save_path="figures/error_bars_optim.png")
+    error_bars_params_improved(
+        show=False, save_path="figures/error_bars_num_params_improved.png"
+    )
+    heatmap_errors(show=False, save_path="figures/heatmap_improved_params.png")
 
 
 if __name__ == "__main__":
