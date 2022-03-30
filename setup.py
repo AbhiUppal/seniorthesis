@@ -39,6 +39,7 @@ setup(
         "plotly==5.3.1",
         "python-dotenv",
         "pytz",
+	"scipy",
         "us==2.0.2",
         "yfinance",
     ],
