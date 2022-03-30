@@ -196,9 +196,13 @@ def data_to_csv():
 
     mean_error_guess_norm = []
     sd_error_guess_norm = []
+    mean_error_guess = []
+    sd_error_guess = []
 
     mean_error_optim_norm = []
     sd_error_optim_norm = []
+    mean_error_optim = []
+    sd_error_optim = []
 
     mean_improved = []
     sd_improved = []
@@ -213,7 +217,9 @@ def data_to_csv():
 
     for c in c_values:
         error_guess_norms_temp = []
+        error_guess_temp = []
         error_optim_norms_temp = []
+        error_optim_temp = []
         num_improved_temp = []
         likelihood_guess_temp = []
         likelihood_optim_temp = []
@@ -242,6 +248,8 @@ def data_to_csv():
             num_improved = np.sum(error_optim < error_guess)
             error_guess_norm = np.linalg.norm(error_guess)
             error_optim_norm = np.linalg.norm(error_optim)
+            error_guess_temp.append(np.sum(error_guess))
+            error_optim_temp.append(np.sum(error_optim))
 
             improved_params.append(num_improved)
             num_improved_temp.append(num_improved)
@@ -254,8 +262,14 @@ def data_to_csv():
         mean_error_guess_norm.append(np.mean(error_guess_norms_temp))
         sd_error_guess_norm.append(np.std(error_guess_norms_temp))
 
+        mean_error_guess.append(np.mean(error_guess_temp))
+        sd_error_guess.append(np.std(error_guess_temp))
+
         mean_error_optim_norm.append(np.mean(error_optim_norms_temp))
         sd_error_optim_norm.append(np.std(error_optim_norms_temp))
+
+        mean_error_optim.append(np.mean(error_optim_temp))
+        sd_error_optim.append(np.std(error_optim_temp))
 
         mean_improved.append(np.mean(num_improved_temp))
         sd_improved.append(np.std(num_improved_temp))
@@ -289,10 +303,14 @@ def data_to_csv():
         {
             "mean_error_guess_norm": mean_error_guess_norm,
             "sd_error_guess_norm": sd_error_guess_norm,
+            "mean_error_guess": mean_error_guess,
+            "sd_error_guess": sd_error_guess,
             "mean_likelihood_guess": mean_likelihood_guess,
             "sd_likelihood_guess": sd_likelihood_guess,
             "mean_error_optim_norm": mean_error_optim_norm,
             "sd_error_optim_norm": sd_error_optim_norm,
+            "mean_error_optim": mean_error_optim,
+            "sd_error_optim": sd_error_optim,
             "mean_likelihood_optim": mean_likelihood_optim,
             "sd_likelihood_optim": sd_likelihood_optim,
             "true_likelihood": true_likelihoods_agg,
@@ -321,17 +339,15 @@ def error_bars_optim(show: bool = False, save_path: str = None):
     fname = "experiment-results/error_aggregated.csv"
     data = pd.read_csv(fname).drop(columns=["Unnamed: 0"])
 
-    data["margin_error_optim_norm"] = (
-        critical_t * data["sd_error_optim_norm"] / np.sqrt(number_trials - 1)
+    data["margin_error_optim"] = (
+        critical_t * data["sd_error_optim"] / np.sqrt(number_trials - 1)
     )
 
     fig = go.Figure(
         data=go.Scatter(
             x=data["c"],
-            y=data["mean_error_optim_norm"],
-            error_y=dict(
-                type="data", array=data["margin_error_optim_norm"], visible=True
-            ),
+            y=data["mean_error_optim"],
+            error_y=dict(type="data", array=data["margin_error_optim"], visible=True),
             line=dict(color="black", width=2, dash="dash"),
         )
     )
@@ -340,7 +356,7 @@ def error_bars_optim(show: bool = False, save_path: str = None):
         font_family="Glacial Indifference",
         font_color="black",
         font_size=18,
-        yaxis_title=r"$\left\lVert \hat{E} \right\rVert_F$",
+        yaxis_title="Mean Error of Inferred Matrix",
         xaxis_title="Value of c",
         legend_title_font_color="black",
         template="plotly_white",
