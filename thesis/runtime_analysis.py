@@ -113,7 +113,7 @@ def runtime_plot(save_path: str = None):
         font_color="black",
         font_size=18,
         yaxis_title="Number of parameters improved",
-        xaxis_title="Value of c",
+        xaxis_title="Value of n",
         legend_title_font_color="black",
         template="plotly_white",
     )
