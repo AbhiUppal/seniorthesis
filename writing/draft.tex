@@ -30,11 +30,20 @@
 
 \title{Senior Thesis}
 \author{Abhi Uppal}
-\date{December 2021}
+\date{April 2022}
 
 \begin{document}
 
 \maketitle
+
+\begin{abstract}
+	Graph analytics and graph machine learning have proven themselves to be incredibly powerful in recent years, powering developments in commercial applications such as recommendation engines, as well as research applications such as chemical structure analysis. However, in many applications, how to construct a graph is not necessarily straightforward. I propose a novel algorithm to infer a graph structure on multiple time series by considering how each node evolves at each step in time, rather than taking summary statistics over a sliding window like much past work does. This algorithm is likely non-convex and computationally inefficient, the combination of which lead to it being infeasible to use in its current state. However, I discuss some possibilities on how the algorithm could become feasible in the future.
+\end{abstract}
+
+\vspace*{\fill}
+\begin{center}
+    \noindent Presented to Professor Julio Garín (Claremont McKenna College) and Professor Scot Gould (Keck Science Department of Claremont McKenna, Pitzer, and Scripps Colleges)
+\end{center}
 
 \newpage
 
@@ -45,9 +54,9 @@ Graph theory is a particularly flexible mathematical language for modeling the r
 
 Once one has a graph structure, one can apply a plethora of algorithms to understand the statistics of the graph -- which entities are the big players, how strongly connected are each of the entities, how many hops would it take to get from one end of the graph to the other, and many more. 
 
-In this section, I provide a high-level overview of graphs, as well as some rigorous mathematical definitions of graphs and some node features. I then discuss some of the applications of graph theory before pivoting into a discussion of the problem at hand in this project: how to optimally infer edge weights for a graph whose nodes represent different time series, with the goal of modeling the relationships between the time series by considering how they evolve together in time. Within this discussion, I cover the data I will use for the two main case studies for applications of this model.
+In this section, I provide a high-level overview of graphs, as well as some rigorous mathematical definitions of graphs and some node features. I then discuss some of the applications of graph theory before pivoting into a discussion of the problem at hand in this project: how to optimally infer edge weights for a graph whose nodes represent different time series, with the goal of modeling the relationships between the time series by considering how they evolve together in time. Within this discussion, I discuss a possible applciation of this model in the analysis of financial markets. 
 
-After this section, I present the novel methodology -- a nonlinear Gaussian noise model that learns through stochastic gradient descent a graph and a Gaussian covariance matrix based on how different series move together in time. Following the methodology, I present the results of the algorithm and conclusions. Past the conclusions section is the Appendix, where all of the mathematical work is done. In the ppendix, I assume some familiarity with matrix calculus. I invite the reader to consult the Matrix Cookbook \cite{matrixCookbook} as a reference.
+After this section, I present the novel methodology -- a nonlinear Gaussian noise model that learns through stochastic gradient descent a graph and a Gaussian covariance matrix based on how different series move together in time. Following the methodology, I present the results of the algorithm and conclusions. Past the conclusions section is the Appendix, where all of the mathematical work is done. In the appendix, I assume some familiarity with matrix calculus. I invite the reader to consult the Matrix Cookbook \cite{matrixCookbook} as a reference.
 
 The interested reader may find the code used for this paper available at \href{https://github.com/AbhiUppal/seniorthesis}{\texttt{https://github.com/AbhiUppal/seniorthesis}}.
 
@@ -213,7 +222,7 @@ Alternative approaches exist, such as \cite{PhysRevInferringCausalNetworksPertur
 
 \subsection{Financial Market Graphs}
 
-One of the main case studies I look to investigate in this paper is learning a graph structure on financial markets (particularly a subset of the U.S. stock market). 
+A possible application of these methods is learning a graph structure on financial markets (particularly a subset of the U.S. stock market). 
 
 The study of graph structures on stock markets is popular among many disciplines -- publications of which stem from journals that cover machine learning, information geometry, econophysics, statistical physics, econometrics, and behavioral finance \cite{networkSurveyFinance}. However, most of the interest in this subject stems from Mantegna's 1998 seminal paper \cite{mantegnaSeminalPaper} \textit{Hierarchical Structure in Financial Markets}. In this paper, he introduces the idea of learning a meaningful topological structure on stock returns in financial markets, and chooses to represent said topological structure via a graph. Specifically, he chooses to represent them via a minimum spanning tree (MST):
 
@@ -243,7 +252,7 @@ where cov represents the covariance between series $i$ and $j$, and var represen
 d(i,j) = \sqrt{2(1 - \rho(i,j)}.
 \]
 
-Once these distances are computed, we can compute an MST using one of many algorithms -- for example, Kruskal's Algorithm \cite{kruskalsAlgorithm}\cite{networkSurveyFinance}.
+Once these distances are computed, we can compute an MST using one of many algorithms, such as Kruskal's Algorithm \cite{kruskalsAlgorithm}\cite{networkSurveyFinance}.
 
 However, the methodology presented above does not come without issues. While both the algorithm and the metric are relatively quick to compute, they tend to be statistically weak. The MST is known to be unstable, which may be in part due to the fact that the Perason correlation is brittle to outliers and may not be preferable to other metrics such as a distance derived from the Spearman correlation or distances designed for working on i.i.d. random processes \cite{marti2015proposal}\cite{marti2015generic}.
 
@@ -255,18 +264,7 @@ These are some of a whole host of different potential issues with the methodolog
 
 In \cite{dynamicsMarketCorrelations}, Onnela et al. show that the optimal Markowitz (risk-minimizing) portfolio almost always lies on the leaves of the tree. In \cite{sandhu2015market}, Sandhu et al. generalize the idea of Ricci curvature to graphs and show that the average ricci curvature of a graph increases drastically during financial crises. They also briefly explore the relationship between minimum risk Markowitz portfolios and the curvature of the graph.
 
-All to say, graphs and statistics related to graphs can have useful and interpretable implications for someone hoping to understand and/or predict the behavior of a financial market. This motivates our exposition into this case study.
-
-\subsection{Whales}
-
-Waiting on a response from Jim before writing this section
-
-OUTLINE OF SUBSECTION:
-
-\begin{itemize}
-    \item Talk about the data we have
-    \item Reference some literature explaining why we might be interested in whale social networks
-\end{itemize}
+All to say, graphs and statistics related to graphs can have useful and interpretable implications for someone hoping to understand and/or predict the behavior of a financial market. Given the novel approach to graph learning introduced in this paper, this may provide a new window into financial markets.
 
 \subsection{The Goal and Novel Introductions}
 \label{sec:projectGoal}
@@ -275,7 +273,7 @@ The goal of the project is to represent different time series as nodes in a grap
 
 As noted in Section \ref{sec:graphOverview}, there is no one correct way to create a graph. It is a design choice. The idea here, then, is to compare the statistics of a graph created via a dynamic process (i.e, one that considers evolution at each time step) versus a static process (one that simply computes one statistic over the entire time frame). This sort of dynamic graph generation process is, to the best of my knowledge, a novel introduction to the field of graph learning.
 
-\section{Methods}
+\section{Methodology}
 \label{sec:methods}
 
 Denote the state vector of the system as $\Vec{x}(t)$, where $\Vec{x} \in \mathbb{R}^{n \times 1}$. Each element $\Vec{x}_i$ of $\Vec{x}$ represents the state (current value) of time series $i$. 
@@ -291,7 +289,7 @@ Let $\mu: \mathcal{R}^n \longrightarrow \mathcal{R}^n$ be some arbitrary differe
 
 % https://math.stackexchange.com/questions/332441/affine-transformation-applied-to-a-multivariate-gaussian-random-variable-what
 
-Now, this entire equation represents an affine transformation of a multivariate gaussian\ footnote{Does this result need to be derived in the Appendix?} distribution $\eta_t$. That is, we have
+Now, this entire equation represents an affine transformation of a multivariate gaussian distribution $\eta_t$. That is, we have
 
 \begin{equation}
     x_{t+1} = \mu(Ax_t) + B \eta_t \sim \mathcal{N}(\mu(Ax_t), BB^\top)
@@ -327,18 +325,21 @@ We can then take gradients of this likelihood function (\ref{eqn:likelihoodFunct
 
 Taking the derivative with respect to the $(i,j)$ element of $A$ gives us
 
-\[
+
+\begin{equation}
+    \label{eqn:gradA}
     \nabla_A \log y = \frac{\partial \log y}{\partial A_{ij}} = - \sum_{t=0}^{T-1} x_{t,i} [\mu'(Ax_t)]_j [(BB^\top)^{-1} (x_{t+1} - \mu(Ax_t))]_j,
-\]
+\end{equation}
 
 Taking the derivative with respect to the $(i,j)$ element of $B$ gives us
 
-\[
-\begin{split}
+\begin{equation}
+    \label{eqn:gradB}
+    \begin{split}
         \nabla_B \log y & = \frac{\partial \log y}{\partial B_{ij}} = -T B_{ij}B_{jj} - \\ 
         & \frac{1}{2}\sum_{t=0}^{T-1} \sum_{k=1}^{n} \sum_{l=1}^{n} (x_{t+1} - \mu(Ax_{t}))_k (x_{t+1} - \mu(Ax_{t}))_l \bigg[(BB^\top)^{-1}_{ki} [B^{-1}]_{jl} + (BB^\top)^{-1}_{il} [(B^\top)^{-1}]_{kj}\bigg].
     \end{split}
-\]
+\end{equation}
 
 With these gradients in hand, we can optimize the likelihood function with respect to the matrices $A$ and $B$ and obtain an optimal graph representation of our time series data.
 
@@ -347,7 +348,7 @@ With these gradients in hand, we can optimize the likelihood function with respe
 
 Noting the equations above, the astute reader may notice that the required computations for even a single step of gradient descent are intensive. 
 
-Note that each matrix, $A$ and $B$, are of dimension $n \times n$. Square matrix multiplication and  inversion, via the standard algorithms (textbook matrix multiplication and Gauss-Jordan elimination) each have a computational complexity of $O(n^3)$. Algorithms exist that optimize each of these to around $O(n^{2.4})$ [CITATION https://arxiv.org/pdf/2010.05846.pdf], but as we cannot be sure without inspection into source code the method that $\texttt{numpy}$ uses, we assume each operation is maximally complex, at $O(n^3)$. Additionally, some of these improved algorithms are \textit{galactic algorithms}, where the input size of the problem needs to be so astronomically large to see asymptotic gains that the algorithm cannot be implemented in practice. Even in the case of algorithms that are closer to $O(n^{2.8})$, they often are only valid for algorithms where $n$ approaches large numbers, such as $100$ [NEED CITATION -- search for Strassen Algorithm]. As we will see in the rest of this section, requiring $n$ to reach $100$ is simply not feasible.
+Note that each matrix, $A$ and $B$, are of dimension $n \times n$. Square matrix multiplication and  inversion, via the standard algorithms (textbook matrix multiplication and Gauss-Jordan elimination) each have a computational complexity of $O(n^3)$. Algorithms exist that optimize each of these to around $O(n^{2.4})$ \cite{FastMatrixMultiplicationGalatic}, but as we cannot be sure without inspection into source code the method that $\texttt{numpy}$ uses, we assume each operation is maximally complex, at $O(n^3)$. Additionally, some of these improved algorithms are \textit{galactic algorithms}, where the input size of the problem needs to be so astronomically large to see asymptotic gains that the algorithm cannot be implemented in practice. Even in the case of algorithms that are closer to $O(n^{2.8})$ such as Strassen's Algorithm \cite{StrassenFastMatrixMultiplication}, they often are only valid for algorithms where $n$ approaches large numbers, such as $100$. As we will see in the rest of this section, requiring $n$ to reach $100$ is simply not feasible for this project.
 
 Generally, in a degrees of freedom argument, one must have at least as many data points as parameters in order to optimize correctly. This puts a lower bound on $T$ as well: between the two matrices $A$ and $B$, each with $n^2$ elements, this means $T \geq 2n^2$.
 
@@ -363,9 +364,22 @@ Each of these time complexities are valid for a \textit{single} optimization ste
 
 $O(kn^8)$ is an incredibly large time complexity. For example, if the optimization with $n=10$ takes 1 second, then the optimization with $n=100$ will take $10^8$ seconds, or about $3.2$ \textit{years}. That's optimistic as well, since computing each of the gradients on simulated data for $n=10$ takes about $30$ seconds when parallelized across 6 CPU cores. For $100$ optimization steps, this takes about $3000$ seconds, or $50$ minutes. doing the optimization for $n=100$, then, would take about $3000 \cdot 10^8 \approx 4500$ \textbf{years}.
 
-For context, $O(n!)$ is generally considered to be one of the worst runtimes possible for an algorithm. For $k=100$, the optimization algorithm has a comparable runtime to an $O(n!)$ algorithm for $n \leq 20$. 
+To illustrate, consider Figure \ref{fig:runtime}, detailing the time in seconds to compute the gradients with respect to $A$ and $B$ for $n = 5, 6, \ldots, 12$. Note that it takes almost $10$ times as long to compute the gradients for $n=12$ than $n=5$. These computations were performed on a Windows PC with a 3.9 GHz Intel i9 16-core processor, with computations being parallelized across $14$ of the $16$ available cores.
 
-In the interest of not turning my \$1200 laptop into a glorified toaster, I employ a simplification. Rather than letting $B$ be an $n \times n$ matrix, I let it be a constant $c$ times the identity matrix $I$. This removes some of the complications associated with correlated noise, and allows for much simpler computation. Under this condition, the key equations reduce to
+\begin{figure}[hbt!]
+    \vspace{0.1in}
+    \par
+    \begin{center}
+    \caption{Runtimes for computing the gradients with respect to $A$ and $B$ in seconds for $n = 5, 6, \ldots, 12$}.
+    \label{fig:runtime}
+    \includegraphics[scale=0.11]{Figures/runtime.png}
+    \end{center}
+    \par
+    \vspace{-0.25in}
+    \medskip
+\end{figure}
+
+In the interest of not turning my \$1200 laptop into an Apple Toaster, I employ a simplification. Rather than letting $B$ be an $n \times n$ matrix, I let it be a constant $c$ times the identity matrix $I$. This removes some of the complications associated with correlated noise, and allows for much simpler computation. Under this condition, the key equations reduce to
 
 \begin{equation}
     \label{eqn:simpleLikelihood}
@@ -402,30 +416,156 @@ The general experiment workflow that occurs in this paper is as follows:
     \item Since the data are simulated, we can compare the inferred values to the true value and see the degree of error in each parameter. 
 \end{itemize}
 
-In my experiments, I set $\eta = 10^{-4}$ and $\varepsilon = 0.1$.
+In my experiments, I set $\eta = 10^{-4}$ and $\varepsilon = 0.1$. I carry out $2$ major experiments
 
-Experiment ideas:
+\subsection{Experiment 1: Global Optimum}
+
+The goal of Experiment 1 is to see if multiple estimates give relatively the same values for the inferred value of $A$. I generate a dataset with $c=1$ and a known value of $A$ with values in $[0, 1]$. I then initialize 10 random matrices, also with values in $[0, 1]$, and attempt to optimize them.
+
+With the results of this experiment in hand, we can determine two things:
 
 \begin{enumerate}
-    \item Given multiple guesses, how far away are they from each other? Do they converge to the same value? (Does the optimization problem have a global max?) prefix: "global". \textbf{HOW:} heatmap of standard deviation of the different values, given that they all started with different guesses.
-    \item What is the runtime of the code for different values of $n$? prefix: "runtime"
-    \item Average inference error for each scale of noise. prefix: "error"
+    \item How consistent each of the estimates are with each other
+    \item How far off the average estimate is from the true value.
 \end{enumerate}
+
+If all of the estimates are the same, we can infer that they are all converging to the same local maximum. If the average estimate is perfect for each parameter in $A$, we can further conclude that the optimal value from the optimization is a global maximum.
+
+If each initial value converges to a different value, then it can be reasonably assumed that the optimization problem is non-convex and finding a global solution is difficult to do efficiently using numerical calculus.
+
+\subsection{Experiment 2: Estimate Errors}
+
+The goal of this experiment is to estimate the average error in each value of $A$ after the optimization in order to gauge the effectiveness of the optimization algorithm. 
+
+Denote $\hat{A}$ to be the estimated value of $A$ after optimization, and $A_0$ to be the initial guess. We can then take $\hat{E} = \hat{A} - A$ to be the post-optimization error matrix (how far off each element is from the true value) and $E_0 = A_0 - A$ to be the pre-optimization error matrix. 
+
+Then, we can compare the values of $\hat{E} - E_0$. If an element of $\hat{E} - E_0$ is negative, then we that element moved closer to the true value after the optimization. If it is positive, the element after the optimization is further from the true value than before. This allows the ability to gauge whether or not the optimization is \textit{actually} doing anything in terms of getting closer to the true value of $A$.
+
+We can also quantify the value of error by estimating 95\% confidence intervals for the average error produced in an optimization. For this, I perform 10 separate optimizations, each with its own generated dataset and initial guess, for each value of $c$. Then, for each value of $c$, I estimate a 95\% confidence interval for the average error in the inference.
+
+
 
 \section{Results}
+\label{sec:results}
 
-\section{Analysis}
+\subsection{Experiment 1 Results}
+\label{subsec:Exper1Results}
 
-Ideas for analysis
+In order to visualize the consistency of the estimates, I create a heatmap in which each cell represents the standard deviation of the estimated values for all $10$ estimates performed on the data. The top left cell corresponds to $A_{1, 1}$, with the cell to the right representing $A_{1, 2}$, etc. 
 
-\begin{enumerate}
-    \item Talk about contributing factors to errors
-    \item How might the project be extended from here?
-    \item What happens if we set the noise to be 0? Can we perfectly infer?
-    \item Runtime plot for n = 5, 6, 7, $\ldots$, 12
-    \item Average error for scale of noise. Try 3-4 different scaling factors, see what happens. Error bar plot because they're nice. Try noise scaled by $0$, $0.5$, $1$, $1.5$, $2$. Sample each $5-10$ times depending on runtime. Maybe try with $T=500$ an $T=1000$ as well. Just like the cogsci paper.
-    \item Allow $B$ to be a diagonal matrix that has different values $c_1, \ldots, c_n$
-\end{enumerate}
+\newpage
+
+\begin{figure}[hbt!]
+    \par
+    \begin{center}
+    \caption{Heatmap of the standard deviation of matrix values across $10$ estimates of $A$, with $c=1$. }
+    \label{fig:heatmapSD}
+    \includegraphics[scale=0.1]{Figures/heatmap_sd_guesses.png}
+    \end{center}
+    \par
+    \vspace{-0.25in}
+    \medskip
+\end{figure}
+
+\vspace{-0.5in}
+
+\begin{figure}[hbt!]
+    \par
+    \begin{center}
+    \caption{Heatmap of the difference in the average estimate of $A$ and the true value of $A$, $\mathbb{E}[\hat{A}] - A$.}
+    \label{fig:heatmapAVG}
+    \includegraphics[scale=0.1]{Figures/heatmap_average_minus_true.png}
+    \end{center}
+    \par
+    \vspace{-0.25in}
+    \medskip
+\end{figure}
+
+\newpage
+
+This figure shows a somewhat large degree of variation between the values, with optimized values tending to differ in magnitude by about $0.2$ to $0.3$ from the mean estimate. As such, it can be inferred that the estimates are not the same. Each trial seems to be converging to some local maximum of the likelihood function, differing from the local maxima that initial guesses converge to.
+
+The result in Figure \ref{fig:heatmapSD} begs the question: given the large variation of estimates, does the average estimate for each parameter well approximate the true value used to generate the data? Figure \ref{fig:heatmapAVG} attempts to answer this question by plotting a heatmap of $\mathbb{E}[\hat{A}] - A$, the average estimate minus the true value of $A$. Results show varying amounts of success (values near $0$ are accurate), but the general result is that the average estimate does not well approximate the true value of $A$.
+
+
+\subsection{Experiment 2 Results}
+\label{subsec:Exper2Results}
+
+Given the results of Section \ref{subsec:Exper1Results}, it may be helpful to quantify the degree of error incurred in estimation.
+
+Firstly, I plot a heatmap for an experiment with $c=1$, where values indicate $\hat{E} - E_0$, the difference in error after and before the optimization. This is shown in Figure \ref{fig:heatmapImprovements}. An interesting feature of this map is the columnar color patterns. This indicates that certain nodes have their incoming edges improve, while other nodes have their incoming edges get worse. This may, perhaps, indicate that the error distribution is not entirely random.
+
+While Figure \ref{fig:heatmapImprovements} may look somewhat promising, this is not necessarily the rule among all experiments. Moving beyond single-optimization results, we can observe in Figure \ref{fig:errorBarNumImproved} the average number of post-optimization parameter improvements for various values of $c$, each computed using $10$ trials each.
+
+\newpage
+
+\begin{figure}[hbt!]
+    \par
+    \begin{center}
+    \caption{Heatmap of the difference in the error after and before the optimization, $\hat{E} - E_0$. Note the somewhat columnar color pattern.}
+    \label{fig:heatmapImprovements}
+    \includegraphics[scale=0.10]{Figures/heatmap_improved_params.png}
+    \end{center}
+    \par
+    \vspace{-0.25in}
+    \medskip
+\end{figure}
+
+\vspace{-0.5in}
+
+\begin{figure}[hbt!]
+    \par
+    \begin{center}
+    \caption{Distribution of 95\% confidence intervals for the number of parameters that improved over $10$ trials for each value of $c$}
+    \label{fig:errorBarNumImproved}
+    \includegraphics[scale=0.10]{Figures/error_bars_num_params_improved.png}
+    \end{center}
+    \par
+    \vspace{-0.25in}
+    \medskip
+\end{figure}
+
+\newpage
+
+The trials was run for values of $c \in \{0.25, 0.5, 0.75, 1, 1.5, 2\}$. It should be noted that the value to compare to should be $50$ -- the expected number of improvements a random guess is incremented by a constant. For $c=0.75$ and $c=1$, the $95\%$ confidence intervals are completely above $50$, indicating with high probability that the average number of parameter improvements for these values of $c$ is better than random. However, other value of $c$ do not seem to share the same outcome. While all sample averages are certainly above $50$, indicating that the true averages are more likely to be above $50$ than not, each of the other values of $c$ contain $50$ in their $95\%$ confidence intervals. This means we cannot conclude with high probability that the true improvement is better than random. 
+
+The number of improved parameters, however, does not necessarily quantify the exact amount of improvement. For that, we can examine the average error value for each value of $c$. In particular, for each value of $c$, the average error value across all $10$ trials was computed, and the $95\%$ confidence intervals for the true average error for each value of $c$ are shown in Figure \ref{fig:erroBarOptimError}.
+
+\begin{figure}[hbt!]
+    \par
+    \begin{center}
+    \caption{Distribution of 95\% confidence intervals for the average post-optimization error value.}
+    \label{fig:erroBarOptimError}
+    \includegraphics[scale=0.11]{Figures/error_bars_optim.png}
+    \end{center}
+    \par
+    \vspace{-0.25in}
+    \medskip
+\end{figure}
+
+Unfortunately, the results of the mean error analysis are not incredibly promising. Error values seem to be incredibly large. However, given the non-convexity of the problem, this is largely to be expected. Most estimates latch onto local minima in their neighborhoods, meaning very little optimization of the likelihood function is actually done. 
+
+\section{Analysis and Conclusion}
+
+The results of the experiments on simulated data seem to point the same way: the optimization algorithm, in its current state, is not suitable to be used in data analysis. 
+
+The mathematical results, while sound, present an incredibly computationally intensive problem that is not feasible for many applications. For example, if one wanted to apply a graph learning algorithm to financial data for the purpose of gaining trading advantages, spening an hour to compute a graph on $10$ tickers would be essentially useless for actual applications. This is largely why classical methods, which can be efficiently vectorized and parallelized with libraries such as \texttt{numpy} and \texttt{dask} in Python. Although they aren't dynamic methods such as the method presented in this paper, they can often be computed in under a second, allowing for more frequent use.
+
+Furthermore, the unpredictable relationship between the error in the inferred value of $A$ and the strength of the noise $c$ indicates an unstable optimization that is largely dependent on initial conditions. The likelihood function is dotted with local maxima all over its parameter space, making efficient optimization incredibly difficult. For problems such as these, oftentimes the only way to effectively optimize the function is to perform a grid search. However, with $100$ parameters governing the evolution of $10$ nodes, this is also incredibly computationally intensive, and even less feasible to use in an applied setting.
+
+Further work in this field must first address the issue of computational complexity. Oftentimes, computationally expensive operations such as matrix multiplications can be sped up with vectorization, as it allows for many for computations per CPU clock cycle than element-wise operations. A large bottleneck of the computation of gradients is the nested sums, especially when computing the gradient with respect to $B$. As such, if one could find a way to reduce the term in the sum of equation \ref{eqn:gradB} to a matrix operation, one could represent each term in the sum as a $2$-dimensional slice of a $3$-tensor with dimensions $(i, j, t)$. One could then leverage parallelization and vectorization to quickly compute the terms of the sum and sum the tensor along the time axis. In general, the more these operations can be written in terms of matrix multiplications and tensor operations, the faster the code can run on most machines.
+
+However, no efficiency improvements can address the problem of nonconvexity. Non-convex optimization is at least NP-hard, meaning any problem in NP can be reduced to this problem in polynomial time. That means there is no way to achieve truly optimal results in polynomial time in the input size. Rather, only the solution can be checked in polynomial time. However, if we are to claim this problem is NP-hard, a concrete proof must be presented that the optimization problem is truly nonconvex. As of right now, the results of Experiment 1 point to this fact, but a mathematical proof does not exist at this point.
+
+Nonconvex optimization methods do exist in some capacity, with the most popular method being the solution generally employed in training deep neural networks: throwing a massive amount of computational power at the problem. In general, techniques exist to try and solve nonconvex optimization problems \textit{better} than a grid search, though any theoretical guarantees on convergence to the optimal value are weak, if any even exist. An overview of nonconvex optimization for the interested reader can be found in \cite{JainNonConvexOptimization}. Given that the approach applied in this paper is simple gradient ascent, a method tailored specifically for nonconvex problems may produce more promising optimization results. 
+
+Balancing computational complexity and accuracy is a difficult goal, but if nonconvex methods can be used in conjunction with mathematical sleight-of-hand in rewriting equations \ref{eqn:gradA} and \ref{eqn:gradB}, the optimization may become feasible with enough computing power. 
+
+While the allure of truly dynamic graph inference ic certainly enticing, it is unfortunately not realistic yet. The feasibility of this method is likely to grow in tandem with developments in nonconvex optimization. For now, classical graph generation methods may reign supreme in striking the balance between utility and computing time, but this is likely to change in the future.
+
+
+
+\newpage
 
 \appendix
 
@@ -689,6 +829,11 @@ and so we can compute the gradient (Jacobian matrix) of $y$ with respect to $A$ 
 \begin{equation}
     \nabla_A \log y = \bigg[\frac{\partial \log y}{\partial A_{ij}} \bigg]_{ij}
 \end{equation}
+
+\newpage
+\section{Acknowledgements}
+
+I'm gonna write some acknowledgements here for my final draft
 
 \newpage 
 

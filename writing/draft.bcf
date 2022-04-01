@@ -2377,6 +2377,9 @@
     <bcf:citekey order="31">networkSurveyFinance</bcf:citekey>
     <bcf:citekey order="32">dynamicsMarketCorrelations</bcf:citekey>
     <bcf:citekey order="33">sandhu2015market</bcf:citekey>
+    <bcf:citekey order="34">FastMatrixMultiplicationGalatic</bcf:citekey>
+    <bcf:citekey order="35">StrassenFastMatrixMultiplication</bcf:citekey>
+    <bcf:citekey order="36">JainNonConvexOptimization</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

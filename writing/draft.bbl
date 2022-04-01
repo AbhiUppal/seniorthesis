@@ -19,6 +19,45 @@
 
 \refsection{0}
   \datalist[entry]{nty/global//global/global}
+    \entry{FastMatrixMultiplicationGalatic}{misc}{}
+      \name{author}{2}{}{%
+        {{hash=df51e27c34530c68e1e5351e06003536}{%
+           family={Alman},
+           familyi={A\bibinitperiod},
+           given={Josh},
+           giveni={J\bibinitperiod}}}%
+        {{hash=c1bd1ed8a644634f13fdfe69c651780c}{%
+           family={Williams},
+           familyi={W\bibinitperiod},
+           given={Virginia\bibnamedelima Vassilevska},
+           giveni={V\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {arXiv}%
+      }
+      \strng{namehash}{562644b6a385cfa5180ce879cab013cb}
+      \strng{fullhash}{562644b6a385cfa5180ce879cab013cb}
+      \strng{bibnamehash}{562644b6a385cfa5180ce879cab013cb}
+      \strng{authorbibnamehash}{562644b6a385cfa5180ce879cab013cb}
+      \strng{authornamehash}{562644b6a385cfa5180ce879cab013cb}
+      \strng{authorfullhash}{562644b6a385cfa5180ce879cab013cb}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{A Refined Laser Method and Faster Matrix Multiplication}
+      \field{year}{2020}
+      \verb{doi}
+      \verb 10.48550/ARXIV.2010.05846
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2010.05846
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2010.05846
+      \endverb
+      \keyw{Data Structures and Algorithms (cs.DS),Computational Complexity (cs.CC),Combinatorics (math.CO),FOS: Computer and information sciences,FOS: Computer and information sciences,FOS: Mathematics,FOS: Mathematics}
+    \endentry
     \entry{PhysRevLetterBayesianInferenceNetworksBeliefProp}{article}{}
       \name{author}{5}{}{%
         {{hash=8792478bb6bc8cd35416ef1da7572162}{%
@@ -240,6 +279,49 @@
       \field{year}{2018}
       \verb{eprint}
       \verb 1706.02216
+      \endverb
+    \endentry
+    \entry{JainNonConvexOptimization}{article}{}
+      \name{author}{2}{}{%
+        {{hash=fbeb5a488714394fadfaff285a9b2a13}{%
+           family={Jain},
+           familyi={J\bibinitperiod},
+           given={Prateek},
+           giveni={P\bibinitperiod}}}%
+        {{hash=977411ad502859aa9c86266c0f92b197}{%
+           family={Kar},
+           familyi={K\bibinitperiod},
+           given={Purushottam},
+           giveni={P\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Now Publishers}%
+      }
+      \strng{namehash}{2da16a6b52a7a7e1925b73b7f2330d63}
+      \strng{fullhash}{2da16a6b52a7a7e1925b73b7f2330d63}
+      \strng{bibnamehash}{2da16a6b52a7a7e1925b73b7f2330d63}
+      \strng{authorbibnamehash}{2da16a6b52a7a7e1925b73b7f2330d63}
+      \strng{authornamehash}{2da16a6b52a7a7e1925b73b7f2330d63}
+      \strng{authorfullhash}{2da16a6b52a7a7e1925b73b7f2330d63}
+      \field{sortinit}{J}
+      \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Foundations and Trends{®} in Machine Learning}
+      \field{number}{3-4}
+      \field{title}{Non-convex Optimization for Machine Learning}
+      \field{volume}{10}
+      \field{year}{2017}
+      \field{pages}{142\bibrangedash 336}
+      \range{pages}{195}
+      \verb{doi}
+      \verb 10.1561/2200000058
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1561%2F2200000058
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1561%2F2200000058
       \endverb
     \endentry
     \entry{terrorInTheMindOfGod}{book}{}
@@ -1077,6 +1159,38 @@
       \verb{url}
       \verb https://link.aps.org/doi/10.1103/PhysRevE.102.042309
       \endverb
+    \endentry
+    \entry{StrassenFastMatrixMultiplication}{article}{}
+      \name{author}{1}{}{%
+        {{hash=c6330ed48a65e98286b4ac247fbf84b0}{%
+           family={STRASSEN},
+           familyi={S\bibinitperiod},
+           given={V.},
+           giveni={V\bibinitperiod}}}%
+      }
+      \strng{namehash}{c6330ed48a65e98286b4ac247fbf84b0}
+      \strng{fullhash}{c6330ed48a65e98286b4ac247fbf84b0}
+      \strng{bibnamehash}{c6330ed48a65e98286b4ac247fbf84b0}
+      \strng{authorbibnamehash}{c6330ed48a65e98286b4ac247fbf84b0}
+      \strng{authornamehash}{c6330ed48a65e98286b4ac247fbf84b0}
+      \strng{authorfullhash}{c6330ed48a65e98286b4ac247fbf84b0}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Numerische Mathematik}
+      \field{title}{Gaussian Elimination is not Optimal.}
+      \field{volume}{13}
+      \field{year}{1969}
+      \field{pages}{354\bibrangedash 356}
+      \range{pages}{3}
+      \verb{urlraw}
+      \verb http://eudml.org/doc/131927
+      \endverb
+      \verb{url}
+      \verb http://eudml.org/doc/131927
+      \endverb
+      \keyw{numerical analysis}
     \endentry
     \entry{distanceCorrelation}{article}{}
       \name{author}{2}{}{%
