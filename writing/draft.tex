@@ -1,4 +1,5 @@
-\documentclass{article}
+\documentclass[12pt]{article}
+\usepackage{csquotes} % Quotation utilities
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
@@ -6,6 +7,7 @@
 \usepackage{amsthm}
 \usepackage{hyperref} % For hyperlinks
 \usepackage{graphicx} % To use figures
+\usepackage{geometry} % For text formatting
 \usepackage{biblatex} % For citations
 \addbibresource{refs.bib}
 
@@ -28,37 +30,85 @@
     pdfpagemode=FullScreen,
     }
 
-\title{Senior Thesis}
-\author{Abhi Uppal}
-\date{April 2022}
+\geometry{legalpaper, portrait, margin=1in}
+
+\title{\Huge Dynamic Nonlinear Gaussian Model for Inferring a Graph Structure on Time Series}
+
+\date{}
 
 \begin{document}
 
 \maketitle
 
-\begin{abstract}
-	Graph analytics and graph machine learning have proven themselves to be incredibly powerful in recent years, powering developments in commercial applications such as recommendation engines, as well as research applications such as chemical structure analysis. However, in many applications, how to construct a graph is not necessarily straightforward. I propose a novel algorithm to infer a graph structure on multiple time series by considering how each node evolves at each step in time, rather than taking summary statistics over a sliding window like much past work does. This algorithm is likely non-convex and computationally inefficient, the combination of which lead to it being infeasible to use in its current state. However, I discuss some possibilities on how the algorithm could become feasible in the future.
-\end{abstract}
-
-\vspace*{\fill}
 \begin{center}
-    \noindent Presented to Professor Julio Garín (Claremont McKenna College) and Professor Scot Gould (Keck Science Department of Claremont McKenna, Pitzer, and Scripps Colleges)
+    
+    $\;$
+    
+    {\huge A Thesis Presented
+
+    $\;$ \newline
+
+    by 
+
+    Abhinuv Uppal 
+
+    $\;$ \newline
+
+
+    To the Keck Science Department
+    of
+    Claremont McKenna, Scripps, and Pitzer Colleges
+
+    $\;$ \newline
+
+    In Partial Fulfillment of
+    The Degree of Bachelor of Arts
+
+    $\;$ \newline
+
+    Senior Thesis in Physics
+
+    $\;$ \newline
+    
+    April 25th, 2022}
+
+
 \end{center}
 
 \newpage
 
-\section{Introduction and Literature Review}
+\pagenumbering{arabic}
+
+\begin{abstract}
+	In many applications of graph analytics, the optimal graph construction is not always straightforward. I propose a novel algorithm to dynamically infer a graph structure on multiple time series by first imposing a state evolution equation on the graph and deriving the necessary equations to convert it into a maximum likelihood optimization problem. After running experiments on simulated data, it appears the required optimization is likely non-convex and does not generally produce results significantly better than randomly tweaking parameters, so it is not feasible to use in its current state. However, I discuss potential improvements and suggestions as to how the algorithm could become feasible in the future.
+\end{abstract}
+
+\section{Introduction}
 \label{sec:intro}
 
-Graph theory is a particularly flexible mathematical language for modeling the relationship between different entities. While it is a vague description, it draws its power from this -- providing a framework for analyzing problems ranging all the way from social network analysis \cite{socialNetworkAnalysis} to creating a model of natural language \cite{speer2018conceptnet}. 
 
-Once one has a graph structure, one can apply a plethora of algorithms to understand the statistics of the graph -- which entities are the big players, how strongly connected are each of the entities, how many hops would it take to get from one end of the graph to the other, and many more. 
+Graph theory is a particularly flexible mathematical language for modeling the relationship between different entities. While it is a vague description, it draws its power from this -- providing a framework for analyzing problems ranging all the way from social network analysis \cite{socialNetworkAnalysis} to modelling natural language \cite{speer2018conceptnet}. 
 
-In this section, I provide a high-level overview of graphs, as well as some rigorous mathematical definitions of graphs and some node features. I then discuss some of the applications of graph theory before pivoting into a discussion of the problem at hand in this project: how to optimally infer edge weights for a graph whose nodes represent different time series, with the goal of modeling the relationships between the time series by considering how they evolve together in time. Within this discussion, I discuss a possible applciation of this model in the analysis of financial markets. 
+Once one has a graph structure, one can apply a plethora of algorithms to understand the statistics of the graph -- which entities are the big players, how strongly connected are each of the entities, how many hops would it take to get from one end of the graph to the other, and many more. Said statistics can be fed into graph machine learning pipelines to create incredibly powerful predictive and generative models.
 
-After this section, I present the novel methodology -- a nonlinear Gaussian noise model that learns through stochastic gradient descent a graph and a Gaussian covariance matrix based on how different series move together in time. Following the methodology, I present the results of the algorithm and conclusions. Past the conclusions section is the Appendix, where all of the mathematical work is done. In the appendix, I assume some familiarity with matrix calculus. I invite the reader to consult the Matrix Cookbook \cite{matrixCookbook} as a reference.
+However, as with all data science, data analysis on graphs largely adheres to the tried and tested principle of ``garbage in, garbage out.'' Choosing exactly how to structure your graph involves a plethora of design choices: what are the nodes intended to represent? What information do the edges encode? Should the edges be weighted? Should the graph be sparse or dense? State-of-the-art graph machine learning methods cannot fix a poorly constructed graph. 
 
-The interested reader may find the code used for this paper available at \href{https://github.com/AbhiUppal/seniorthesis}{\texttt{https://github.com/AbhiUppal/seniorthesis}}.
+As will be discussed in section \ref{sec:Background}, current methods in this field either rely either on graph neural network (GNN) methods or static methods where statistics are computed over a sliding window. This paper attempts to provide a new lens into this field with its dynamic model, applicable to any field in which multiple time series are involved. This alternative construction provides a new design choice for imposing graph structures on time series, where the edges explicitly encode information on how the nodes evolve at each point in time.
+
+In Section \ref{sec:Background}, I provide a high-level overview of graphs, as well as some rigorous mathematical definitions of graphs and some node features. I then discuss some of the applications of graph theory before pivoting into a discussion of the problem at hand in this project: how to optimally infer edge weights for a graph whose nodes represent different time series, with the goal of modeling the relationships between the time series by considering how they evolve together in time. Within this discussion, I discuss a possible applciation of this model in the analysis of financial markets. 
+
+After the background, I present the novel methodology -- a nonlinear Gaussian noise model that learns through stochastic gradient descent a graph and a Gaussian covariance matrix \textit{dynamically} based on how different series move together in time. Following the methodology, I present the results of the algorithm and conclusions to be drawn from it. 
+
+Past the conclusions section is the Appendix, where all of the mathematical work is done. In the Appendix, I assume some familiarity with matrix calculus. I invite the reader to consult the Matrix Cookbook \cite{matrixCookbook} as a reference.
+
+The interested reader may find the code used for this paper available on my GitHub profile\footnote{\href{https://github.com/AbhiUppal/seniorthesis}{\texttt{https://github.com/AbhiUppal/seniorthesis}}}.
+
+\section{Background and Literature Review}
+\label{sec:Background}
+
+Graph theory as a field, while widely applicable, is seldom discussed as a field outside of its direct applications. As such, it is customary in many papers to give an overview of the field in the interest of being relatively self-contained. This section first takes a pedagogical approach to familiarizing the reader with graphs, and then discusses some of the past work in the field of inferring graph structures from data.
+
+Readers familiar with graph theory may skip to Section \ref{subsec:motivation}. For those familiar with graph machine learning and its applications, the content most relevant to this study begins at section \ref{subsubsec:learningGraphStructures}.
 
 \subsection{A High-Level Overview of Graphs}
 \label{sec:graphOverview}
@@ -105,7 +155,7 @@ The big picture, now, is that we have a bunch of objects, which we refer to as \
 
 Graph theory provides a mathematical framework for working with structures like these. A graph with multiple edge (and/or node) types, as we saw in the above example, is called a \textbf{heterogenous graph}, or \textbf{heterograph}. Since the relationships all run in one direction, we call it a \textbf{directed graph}, or \textbf{digraph} (that is, person can drive car but car cannot drive person). If a graph is not directed, we creatively call it an \textbf{undirected graph}.
 
-Edges need not always encode a qualiative relationship. If we let the nodes of a graph be random variables $V = \{x_1, x_2, ..., x_N\}$, then we can define edges between them such as:
+Edges need not always encode a qualitative relationship. If we let the nodes of a graph be random variables $V = \{x_1, x_2, ..., x_N\}$, then we can define edges between them such as:
 
 \[
 e_{ij} = \begin{cases}
@@ -160,9 +210,9 @@ For a directed graph, one must make the distinction between the in-degree and th
 Node degree is often used when considering the importance of a node in a graph -- that is, more important nodes tend to be more densely connected. However, alternative measures exist to measure node importance -- particularly centrality measures such as betweenness centrality, closeness centrality, and eigenvector centrality. 
 
 \subsection{Why Graphs? Applications of Graphs}
-\label{sec:motivation}
+\label{subsec:motivation}
 
-Graphs are a general language for describing and analyzing disparate entities with interactions and potentially nontrivial relationships. They are simple as a data structure, but have a wide variety of applications that stretches nearly as far as the the imagination can stretch \cite{hamiltonGRL}. Part of the power in graph formalisms is that the data structure inherently models relationships \textit{between} different points, as opposed to just the properties of individual points. 
+Graphs are a general language for describing and analyzing disparate entities with interactions and potentially nontrivial relationships. They are simple as a data structure, but have a wide variety of applications that stretches nearly as far as the imagination can stretch \cite{hamiltonGRL}. Part of the power in graph formalisms is that the data structure inherently models relationships \textit{between} different points, as opposed to just the properties of individual points. 
 
 Modern methods in graph machine learning such as Graph Convolutional Networks (GCN) \cite{GCNPaper} and GraphSAGE \cite{graphSAGE} allow one to consider both the graph structure \textit{and} features of the individual points in machine learning pipelines -- effectively increasing the potential predictive and explanatory power of machine learning models for any datasets that can be seen as a graph. 
 
@@ -194,7 +244,7 @@ Other work, such as \cite{PhysRevLetterBayesianInferenceNetworksBeliefProp}, app
 
 \subsubsection{Graph Machine Learning}
 
-So, classical algorithms are already powerful, but the real beauty of having graph representations is the realm of \textbf{graph machine learning}. These are incredbily powerful models that utilize graph structures, and potentially features associated with nodes, to perform a classification or regression task. There are many tasks possible for machine learning algorithms, but the three most common tasks are
+So, classical algorithms are already powerful, but the real beauty of having graph representations is the realm of \textbf{graph machine learning}. These are incredibly powerful models that utilize graph structures, and potentially features associated with nodes, to perform a classification or regression task. There are many tasks possible for machine learning algorithms, but the three most common tasks are
 
 \textbf{Node classification:} Classify each node as a member of a pre-defined group. An example of this would be to determine whether or not each person in a social network owns a car.
 
@@ -205,6 +255,7 @@ So, classical algorithms are already powerful, but the real beauty of having gra
 There are additional complications that come with using graph data (e.g., how does one determine how to perform a train/test/validation split for a graph dataset?), and while solutions do exist, this is beyond the scope of this thesis. For a review of graph machine learning methods, the interested reader should look at \cite{graphMLSurvey}. For an in-depth dive into graph neural networks, see \cite{GNNsurvey}.
 
 \subsubsection{Learning Graph Structures}
+\label{subsubsec:learningGraphStructures}
 
 To this point, we have seen some of the incredibly useful features of graphs, including but nowhere near limited to being able to describe relationships between entities, incorporate said relationships into machine learning pipelines, and providing a common data structure for complex relationships.
 
@@ -221,6 +272,7 @@ This type of work, while relatively new, is not completely novel. Graph Signal P
 Alternative approaches exist, such as \cite{PhysRevInferringCausalNetworksPerturbations}. In it, Stepaniants et al. note that the problem of graph inference is ill-posed in that there are multiple viable graph structures that can be used to describe the behavior of the same dynamical system. To remedy this, they describe a graph learning algorithm that works by considering how the behavior of the nodes change after a perturbation at one of the other nodes. Modeling how the nodes react to perturbations, the authors claim, helps to disambiguate and clarify what the true graph structure behind the data.
 
 \subsection{Financial Market Graphs}
+\label{subsec:financialMarketGraphs}
 
 A possible application of these methods is learning a graph structure on financial markets (particularly a subset of the U.S. stock market). 
 
@@ -231,56 +283,69 @@ A tree is a graph in which there is exactly one path between any two points.
 \end{definition}
 
 \begin{definition}[Minimum Spanning Tree]
-A spanning tree is a subgraph $T$ of graph $\mathcal{G} = (V, E)$ such that it is a tree and it includes all vertices of $\mathcal{G}$. A minimum spanning tree is the spanning tree that minimizes the sum of edge weights 
+A minimum spanning tree is a tree-structured subgraph $T$ of a graph $\mathcal{G} = (V, E)$,with edges selected such that their weights are as small as possible.
 \end{definition}
 
-To ensure stationarity, he transforms each series $i$ to be the difference in logged prices between the current and previous period:
+
+Mantegna begins with a selection of stock series he wishes to model the relationship between, represented as time series of prices $P_i$, where $i$ represents a particular stock. To ensure stationarity, he transforms each series $i$ to be the difference in logged prices between the current and previous period:
 
 \[
 R_i(t) = \log P_i(t) - \log P_i(t-1).
 \]
 
-He then computes the Pearson correlation between each of these transformed series, defined by
+He hopes to capture relationships in the graph by considering how these log returns move together over a sliding window. To achieve this, he uses the Pearson correlation, specialized for capturing linear correlations. This is defined by
 
 \[
 \rho(i,j) = \frac{\text{cov}(i, j)}{\text{var}(i) \text{var}(j)},
 \]
 
-where cov represents the covariance between series $i$ and $j$, and var represents the variance of a series. Since this is not a Euclidean metric ($-1 \leq \rho(i,j) \leq 1$), the correlation coefficient can be transformed into distances:
+where cov represents the covariance between series $i$ and $j$, and var represents the variance of a series. This coefficient can range from -1 (two series are completely anti-correlated) to 1 (two series are perfectly correlated), with 0 representing no correlation between the two series. Since this is not a Euclidean metric ($-1 \leq \rho(i,j) \leq 1$), the correlation coefficient can be transformed into distances:
 
 \[
 d(i,j) = \sqrt{2(1 - \rho(i,j)}.
 \]
 
-Once these distances are computed, we can compute an MST using one of many algorithms, such as Kruskal's Algorithm \cite{kruskalsAlgorithm}\cite{networkSurveyFinance}.
+Once these distances are computed, we can compute an MST using one of many algorithms, such as Kruskal's Algorithm \cite{kruskalsAlgorithm}\cite{networkSurveyFinance}. Once one has a market graph, there are many applications. For example, one may want to compute graph features and integrate them into a machine learning pipeline. However, there are other applciations beyond machine learning.
 
-However, the methodology presented above does not come without issues. While both the algorithm and the metric are relatively quick to compute, they tend to be statistically weak. The MST is known to be unstable, which may be in part due to the fact that the Perason correlation is brittle to outliers and may not be preferable to other metrics such as a distance derived from the Spearman correlation or distances designed for working on i.i.d. random processes \cite{marti2015proposal}\cite{marti2015generic}.
+Mantegna motivates the usage of an MST to model financial markets by attempting to discover a hierarchical structure through which they implicitly operate. In such a structure, parts of the MST tend to be strongly connected, which tend to be stocks that belong to the same industry (financial services, electrical utility companies, automobile manufacturers, etc.). These stocks, which tend to be at the leaves of the trees, are typically affected by economic factors relevant to their particular industries. More central nodes, on the other hand, tend to be influenced by more factors, and are therefore usually more unpredictable and risky investments. However, none of these results are shown mathematically -- they are derived from empirical data collected from 1989 to 1995.
+
+In \cite{dynamicsMarketCorrelations}, Onnela et al. show that the optimal Markowitz (risk-minimizing) portfolio almost always lies on the leaves of the tree (nodes with only one incoming edge). In \cite{sandhu2015market}, Sandhu et al. generalize the idea of Ricci curvature to graphs and show that the average ricci curvature of a market graph (with stocks as nodes) increases drastically during financial crises. They also briefly explore the relationship between minimum risk Markowitz portfolios and the curvature of the graph.
+
+However, the methodology presented above does not come without issues. While both the algorithm and the metric are relatively quick to compute, they tend to be statistically weak. The MST is known to be unstable, which may be in part due to the fact that the Perason correlation is brittle to outliers and may not be preferable to other metrics such as a distance derived from the Spearman correlation or distances designed for working on i.i.d. random processes \cite{marti2015proposal}\cite{marti2015generic}. These are some of a whole host of different potential issues with the methodology. I invite the reader to look at \cite{networkSurveyFinance} for a comprehensive review of the problems and potential solutions. 
 
 Among the solutions mentioned by Marti in the above papers, one may also opt to move to a metric that better captures nonlinear relationships such as the Brownian distance correlation \cite{distanceCorrelation}, or a directed graph based on Granger causality \cite{grangerCausalityNetworks}. However, while they are certainly informative, nonlinear metrics have a drawback in that they take much longer to compute than their linear counterparts.
 
-In the case of the algorithm, several alternatives have been suggested to remedy Mantegna's original algorithm. An example of such is a dynamic spanning tree (DST), designed to tackle the stability problem of the MSTs by capturing the fact that correlations vary over time within the algorithm itself \cite{dynamicSpanningTrees}. There also exist maximum likelhihood methods \cite{mleClustering} that define clustering non-parametrically based on simple 1-factor models that do not need to specify the number of clusters \textit{a priori}.
+In the case of the algorithm, several alternatives have been suggested to remedy Mantegna's original algorithm. An example of such is a dynamic spanning tree (DST), designed to tackle the stability problem of the MSTs by capturing the fact that correlations vary over time within the algorithm itself \cite{dynamicSpanningTrees}. There also exist maximum likelihood methods \cite{mleClustering} that define clustering non-parametrically based on simple 1-factor models that do not need to specify the number of clusters \textit{a priori}.
 
-These are some of a whole host of different potential issues with the methodology. I invite the reader to look at \cite{networkSurveyFinance} for a comprehensive review of the problems and potential solutions. Once one has a market graph, there are many applications. For example, one may want to compute graph features and integrate them into a machine learning pipeline. However, there are other applciations beyond machine learning.
-
-In \cite{dynamicsMarketCorrelations}, Onnela et al. show that the optimal Markowitz (risk-minimizing) portfolio almost always lies on the leaves of the tree. In \cite{sandhu2015market}, Sandhu et al. generalize the idea of Ricci curvature to graphs and show that the average ricci curvature of a graph increases drastically during financial crises. They also briefly explore the relationship between minimum risk Markowitz portfolios and the curvature of the graph.
-
-All to say, graphs and statistics related to graphs can have useful and interpretable implications for someone hoping to understand and/or predict the behavior of a financial market. Given the novel approach to graph learning introduced in this paper, this may provide a new window into financial markets.
+All to say, graphs and statistics related to graphs can have useful and interpretable implications for someone hoping to understand and/or predict the behavior of a financial market, or simply make risk-minimizing portfolio management decisions given recent market data. The novel approach to graph learning provided in this paper provides a potential basis for a new exposition into understanding financial markets through graphs.
 
 \subsection{The Goal and Novel Introductions}
 \label{sec:projectGoal}
 
 The goal of the project is to represent different time series as nodes in a graph, and using the data of the time series to learn weighted, undirected edges between these nodes. The key here is to not use some heuristic metric (e.g., using something like angular distance, which is calculated from linear correlation), but rather learn the edge weights through a process that explicitly considers how each node's value changes at each time step with respect to each other. So, instead of just computing the correlation over a window and calling that an edge weight, we can use a noisy model to determine how each node evolves both by itself (noise) and in relation to other nodes (edges).
 
-As noted in Section \ref{sec:graphOverview}, there is no one correct way to create a graph. It is a design choice. The idea here, then, is to compare the statistics of a graph created via a dynamic process (i.e, one that considers evolution at each time step) versus a static process (one that simply computes one statistic over the entire time frame). This sort of dynamic graph generation process is, to the best of my knowledge, a novel introduction to the field of graph learning.
+As noted in Section \ref{sec:graphOverview}, there is no one correct way to create a graph. It is a design choice. This sort of dynamic graph generation process is, to the best of my knowledge, a novel introduction to the field of graph learning.
+
+The rest of this paper proceeds as follows: I first define a mathematical model describing how, under certain assumptions, it may be possible to infer a graph structure on a collection of time series. Next, I describe an experiment setup on simulated data to test if the method works. Finally, I present and interpret the results, and offer some concluding remarks to the viability of this algorithm and other modeling concerns.
 
 \section{Methodology}
 \label{sec:methods}
 
-Denote the state vector of the system as $\Vec{x}(t)$, where $\Vec{x} \in \mathbb{R}^{n \times 1}$. Each element $\Vec{x}_i$ of $\Vec{x}$ represents the state (current value) of time series $i$. 
+As in the models discussed earlier, I start with a dataset of $n$ time series with a defined frequency, with the discrete time index taking values in $t \in \{0, 1, 2, \ldots, T\}$. Index the nodes with $i \in \{1, 2, \ldots, n\}$. Then, at each point in time $t$, each node $i$ has value $x_i(t)$. We can collect each $x_i(t)$ into an $n \times 1$ vector $\vec{x}_t$, where the $i$-th element in $\vec{x}_t$ is $x_i(t)$. The collection of all nodes will be referred to as the \textit{system}, while the vector $\vec{x}_t$ will be referred to as the \textit{state vector} at time $t$.
 
-These series are connected together via an unknown graph $\mathcal{G} = (V, E)$ with adjacency matrix $A$. Let $\eta(t)$ be an $n \times 1$ vector of Gaussian noise at time $t$ with covariance matrix $C = I_n$, the $n-$dimensional identity matrix. Let $B$ being an $n \times n$ matrix representing the relationship between noise in each series. 
+The approach taken in this paper assumes that these nodes are connected via an unknown graph that determines the time evolution of the entire system. We represent this graph as an adjacency matrix $A$. Each element in $A$, $A_{ij}$, represents the relative influence of series $j$ on the value of series $i$. This is counterintuitive relative to what one would expect from a directed edge, but this result is simply derived from an interpretation of the influence of $A_{ij}$ in the product $A\vec{x}_t$.
 
-Let $\mu: \mathcal{R}^n \longrightarrow \mathcal{R}^n$ be some arbitrary differentiable function acting on a vector (for example, element-wise $\tanh$). Then, we can write the time evolution of our system as
+Additionally, let $\mu: \mathbb{R}^n \longrightarrow \mathbb{R}^n$ be some differentiable function acting on a vector (for example, element-wise $\tanh$). The purpose of this function is to add some additional (potentially nonlinear) effects to expand the flexibility of the model. $\mu$ acts on the vector product $A\vec{x}_t$ and determines the final step of deterministic time evolution of the system.
+
+Some constraints must be placed on $A$, $\mu$, or both in order to prevent the state vector from blowing up. In the case of modeling stationary series, one may be able to set $A$ to be a contraction mapping (defined below), especially if $\mu$ is just the identity map. Another alternative would be to set $\mu$'s range to some finite subset. It may be possible to learn $\mu$ from data, which may require a neural network due to its potentially nonlinear nature, but this is beyond the scope of this paper. For the purpose of this study, I set $\mu$ to be an element-wise $\tanh$ function, which has range $[-1, 1]$, to add in some non-linearity to the state evolution.
+
+\begin{definition}[Contraction Mapping]
+Let $d$ be a metric (distance function) on a set $M$. That is, $d(x,y)$ represents a distance between points $x$ and $y$. Then a function $A: M \rightarrow M$ is a contraction mapping if there exists a constant $k \leq 1$ such that $d(Ax, Ay) \leq k d(x, y)$
+\end{definition}
+
+On top of the effect of the adjacency matrix $A$ on the time evolution of the system, I also introduce a noise factor. Let $\eta(t)$ be an $n \times 1$ vector of Gaussian noise at time $t$ with covariance matrix $C = I_n$, the $n-$dimensional identity matrix. However, the noise in one node may affect the noise in others through a \textit{second} network (on the same nodes), represented by another adjacency matrix $B$. Similar to $A$, an element of this matrix $B_{ij}$ indicates the extent to which the value of noise in node $j$ influences the value of noise in node $i$. So, independent noise is generated for each node through an i.i.d Gaussian process, and the noise is then mixed together through the network represented by $B$.
+
+The main goal of this paper, then, is to develop a mathematical and computational framework for simultaneously inferring $A$ and $B$ from the time series data associated with each of the nodes. The key assumption is that the state vector of the system evolves according to the following equation:
 
 \begin{equation}
     \label{eqn:stateEvolution}
@@ -289,19 +354,19 @@ Let $\mu: \mathcal{R}^n \longrightarrow \mathcal{R}^n$ be some arbitrary differe
 
 % https://math.stackexchange.com/questions/332441/affine-transformation-applied-to-a-multivariate-gaussian-random-variable-what
 
-Now, this entire equation represents an affine transformation of a multivariate gaussian distribution $\eta_t$. That is, we have
+Since $\eta$ is a multivariate Gaussian distribution, this state evolution equation is an affine transformation on said distribution. That is, we have
 
 \begin{equation}
     x_{t+1} = \mu(Ax_t) + B \eta_t \sim \mathcal{N}(\mu(Ax_t), BB^\top)
 \end{equation}
 
-Which effectively means 
+Writing this out in its true functional form gives
 
 \begin{equation}
     P(x_{t+1} | x_t, A, B) = \frac{1}{(2\pi)^{\frac{n}{2}}} \frac{1}{\sqrt{|BB^\top|}} \exp \big[{- \frac{1}{2}} (x_{t+1} - \mu(Ax_t))^\top (BB^\top)^{-1} (x_{t+1} - \mu(Ax_t)) \big]
 \end{equation}
 
-So, we can define a log-likelihood function by
+In order to prevent issues associated with floating-point precision in later computations, we can derive a log-likelihood function by taking the logarithm of both sides:
 
 \begin{equation}
 \begin{split}
@@ -320,6 +385,8 @@ Which then expands to
     &= - \frac{1}{2} \sum_{t=0}^{T - 1} n \log(2\pi) + \log(|BB^\top|) + (x_{t+1} - \mu(Ax_t))^\top (BB^\top)^{-1} (x_{t+1} - \mu(Ax_t))
 \end{split}
 \end{equation}
+
+This allows us to treat extremely small probabilities without having to worry about floating-point precision in computer systems. For example, a log-likelihood of $-100$ corresponds to a probability of $ e^{-100} \approx 3.72 \times 10^{-42}$, which is incredibly small. Computers are notorious for making errors in floating point calculations even after $12$ or $15$ decimal places, making it absolutely essential to perform this transformation.
 
 We can then take gradients of this likelihood function (\ref{eqn:likelihoodFunction}) with respect to both $A$ and $B$, and then optimize their parameters via gradient descent. See Appendix sections \ref{subsec:gradADerivation} and \ref{subsec:gradBDerivation} for details on the derivations.
 
@@ -352,9 +419,9 @@ Note that each matrix, $A$ and $B$, are of dimension $n \times n$. Square matrix
 
 Generally, in a degrees of freedom argument, one must have at least as many data points as parameters in order to optimize correctly. This puts a lower bound on $T$ as well: between the two matrices $A$ and $B$, each with $n^2$ elements, this means $T \geq 2n^2$.
 
-The likelihood computation itself requires matrix multiplications, the worst of which being $O(n^3)$ in the final term in the sum. This is summed over all times $T$, so the overall complexity of just the likelihood calculation is $O(Tn^3)$. With the lower bound of $T$ being $\Omega(n^2)$, the likelihood computation is at least $O(n^5)$. Small optimizations can be made by precomputing the values of $\log|BB^\top|$ and $(BB^\top)^{-1}$ at each optimization step, which is employed throughout the entire codebase along with some other values. 
+The likelihood computation itself requires matrix multiplications, the worst of which being $O(n^3)$ in the final term in the sum. This is summed over all times $T$, so the overall complexity of just the likelihood calculation is $O(Tn^3)$. With the lower bound of $T$ being $\Omega(n^2)$, the likelihood computation is at least $O(n^5)$. Small optimizations can be made by precomputing the values of $\log|BB^\top|$ and $(BB^\top)^{-1}$ at each optimization step to prevent having to compute the same value more than once, which is employed throughout the entire codebase along with some other values. 
 
-The time complexity of computing single element of the gradient with respect to $A$ is $O(n^3 + Tn^2)$ for the matrix multiplications and the sum over $t$, assuming a precomputation of $(BB^\top)^{-1}$. However, since this needs to be computed for all $n^2$ elements of $A$, the algorithm is actually $O(Tn^4)$ (the $n^3$ term drops since it is only computed once). With the limit of $T \geq 2n^2$, this becomes $O(n^6)$.
+The time complexity of computing single element of the gradient with respect to $A$ is $O(n^3 + Tn^2)$ for the matrix multiplications and the sum over $t$, assuming a precomputation of $(BB^\top)^{-1}$. However, since this needs to be computed for all $n^2$ elements of $A$, the algorithm is actually $O(Tn^4)$ (the $n^3$ term drops since it is only computed once). With the limit of $T \geq 2n^2$, this becomes, at best, $O(n^6)$.
 
 The time complexity of computing a single element of the gradient with respect to $B$ follows a similar pattern. The matrix multiplications lead to an overhead of $O(n^3)$, but they can be precomputed so they do not have to be done at each time step. Computing $(x_{t+1} - \mu(Ax_t))$, is an $O(n^2)$ operation which needs to be computed for each time step, giving $O(Tn^2)$. For each of those $O(Tn^2)$ operations, there are $n^2$ terms to compute and sum over. This leads to an overall time complexity of $O(n^3 + Tn^4) \implies O(n^6)$ for \textit{each} element of $B$. So, the total complexity for computing the gradient with respect to $B$ is $O(n^8)$.
 
@@ -362,7 +429,7 @@ Each of these time complexities are valid for a \textit{single} optimization ste
 
 \section{Technical Limitations and Experiment Setup}
 
-$O(kn^8)$ is an incredibly large time complexity. For example, if the optimization with $n=10$ takes 1 second, then the optimization with $n=100$ will take $10^8$ seconds, or about $3.2$ \textit{years}. That's optimistic as well, since computing each of the gradients on simulated data for $n=10$ takes about $30$ seconds when parallelized across 6 CPU cores. For $100$ optimization steps, this takes about $3000$ seconds, or $50$ minutes. doing the optimization for $n=100$, then, would take about $3000 \cdot 10^8 \approx 4500$ \textbf{years}.
+$O(kn^8)$ is an incredibly large time complexity. For example, if the optimization with $n=10$ takes 1 second, then the optimization with $n=100$ will take $10^8$ seconds, or about $3.2$ \textit{years}. That's optimistic as well, since computing each of the gradients on simulated data for $n=10$ takes about $30$ seconds when parallelized across 6 CPU cores. For $100$ optimization steps, this takes about $3000$ seconds, or $50$ minutes. Performing the optimization for $n=100$, then, would take about $3000 \cdot 10^8 \approx 4500$ \textbf{years}.
 
 To illustrate, consider Figure \ref{fig:runtime}, detailing the time in seconds to compute the gradients with respect to $A$ and $B$ for $n = 5, 6, \ldots, 12$. Note that it takes almost $10$ times as long to compute the gradients for $n=12$ than $n=5$. These computations were performed on a Windows PC with a 3.9 GHz Intel i9 16-core processor, with computations being parallelized across $14$ of the $16$ available cores.
 
@@ -379,7 +446,11 @@ To illustrate, consider Figure \ref{fig:runtime}, detailing the time in seconds 
     \medskip
 \end{figure}
 
-In the interest of not turning my \$1200 laptop into an Apple Toaster, I employ a simplification. Rather than letting $B$ be an $n \times n$ matrix, I let it be a constant $c$ times the identity matrix $I$. This removes some of the complications associated with correlated noise, and allows for much simpler computation. Under this condition, the key equations reduce to
+In the interest of not turning my \$1200 laptop into an iToaster, I employ a simplification. Rather than letting $B$ be a general $n \times n$ matrix, I let it be a constant $c$ times the identity matrix $I$. This removes some of the complications associated with correlated noise, and allows for much simpler computation. 
+
+To motivate this assumption, this can be interpreted as each node experiencing i.i.d. noise. That is, the noise in one node has no explicit effect on the noise in another, barring the indirect effect on state evolution for the next step. For example, noise for node $1$ at time $t$ will affect the state value for node $1$ at time $t + 1$, but none others. Then, at time $t + 2$, node $2$ may have its value affected by node $1$, which contains the noise from time $t$. While the main goal of this assumption is to reduce computational complexity to make an experiment on simulated data feasible given my limited computing power, the results of said experiment may still be interpreted 
+
+Under this condition, the key equations reduce to
 
 \begin{equation}
     \label{eqn:simpleLikelihood}
@@ -407,7 +478,7 @@ However, in the interest of simplicity (since $c$ depends on $A$), we set it to 
 The general experiment workflow that occurs in this paper is as follows:
 
 \begin{itemize}
-    \item With the equations above in hand, generate simulated data according to Equation \ref{eqn:stateEvolution}
+    \item Generate simulated data according to Equation \ref{eqn:stateEvolution}
     \item Store the true value of $A$ and $c$
     \item Generate an initial guess of $A$ as a random matrix taking values in $[0, 1]$.
     \item Compute the gradient of the likelihood function with respect to this matrix. Call this $\mathcal{L}$
@@ -549,7 +620,7 @@ Unfortunately, the results of the mean error analysis are not incredibly promisi
 
 The results of the experiments on simulated data seem to point the same way: the optimization algorithm, in its current state, is not suitable to be used in data analysis. 
 
-The mathematical results, while sound, present an incredibly computationally intensive problem that is not feasible for many applications. For example, if one wanted to apply a graph learning algorithm to financial data for the purpose of gaining trading advantages, spening an hour to compute a graph on $10$ tickers would be essentially useless for actual applications. This is largely why classical methods, which can be efficiently vectorized and parallelized with libraries such as \texttt{numpy} and \texttt{dask} in Python. Although they aren't dynamic methods such as the method presented in this paper, they can often be computed in under a second, allowing for more frequent use.
+The mathematical results, while sound, present an incredibly computationally intensive problem that is not feasible for many applications. For example, if one wanted to apply a graph learning algorithm to financial data for the purpose of gaining trading advantages, spening an hour to compute a graph on $10$ tickers would be largely useless for actual applications. This is largely why classical methods, which can be efficiently vectorized and parallelized with libraries such as \texttt{numpy} and \texttt{dask} in Python, are typically preferable to static libraries. Although they aren't dynamic methods such as the method presented in this paper, they can often be computed in under a second, allowing for more frequent use.
 
 Furthermore, the unpredictable relationship between the error in the inferred value of $A$ and the strength of the noise $c$ indicates an unstable optimization that is largely dependent on initial conditions. The likelihood function is dotted with local maxima all over its parameter space, making efficient optimization incredibly difficult. For problems such as these, oftentimes the only way to effectively optimize the function is to perform a grid search. However, with $100$ parameters governing the evolution of $10$ nodes, this is also incredibly computationally intensive, and even less feasible to use in an applied setting.
 
@@ -561,7 +632,18 @@ Nonconvex optimization methods do exist in some capacity, with the most popular 
 
 Balancing computational complexity and accuracy is a difficult goal, but if nonconvex methods can be used in conjunction with mathematical sleight-of-hand in rewriting equations \ref{eqn:gradA} and \ref{eqn:gradB}, the optimization may become feasible with enough computing power. 
 
-While the allure of truly dynamic graph inference ic certainly enticing, it is unfortunately not realistic yet. The feasibility of this method is likely to grow in tandem with developments in nonconvex optimization. For now, classical graph generation methods may reign supreme in striking the balance between utility and computing time, but this is likely to change in the future.
+Beyond the issue of computational complexity, from a modeling perspective it may be detrimental to assume every edge in the graph has explanatory power. This method of modeling may lend itself to overfitting. I could use $100$ parameters to model the evolution of $10$ series in the experiment of this paper since the data were actually generated from this type of process, but this may not be true for all processes. It may prove more helpful to think about only the most important factors in determining the graph's evolution.
+
+Oftentimes, when needing to eliminate parameters from models, machine learning practitioners will turn to $L^1$ regularization. This involves adding an extra term to the objective function that penalizes larger model parameters using an $L^1$ norm, defined on a vector as the sum of the individual elements.
+
+\begin{equation}
+    \label{eqn:normL1}
+    \norm{\vec{a}}_1 = \sum_{i=1}^N |a_i|
+\end{equation}
+
+So, as a modeling prospect, one could modify the likelihood function to penalize larger values of these parameters. This could be achieved by subtracting the term $\lambda_A \norm{\vec{a}}_1 + \lambda_B \norm{\vec{b}}_1$ from the log-likelihood function, where $\lambda_A$ and $\lambda_B$ are positive, real-valued parameters that define the amount of artificial penalty incurred by increasing a parameter's value. The vectors $\vec{a}$ and $\vec{b}$ represent the entries in $A$ and $B$ turned into an $\mathbb{R}^{n^2}$ vector. The exact method of doing this conversion is irrelevant, since norm computations are agnostic to the position of each element. This method, of course, adds additional hyperparameters that may need to be tuned, but $L^1$ regularization is specially designed to encourage model sparsity -- that is, models that only have a few non-zero parameters.
+
+While the allure of truly dynamic graph inference is certainly enticing, it is unfortunately not realistic yet. The feasibility of this method is likely to grow in tandem with developments in nonconvex optimization. For now, classical graph generation methods may reign supreme in striking the balance between utility and computing time, but this is likely to change in the future.
 
 
 
@@ -833,7 +915,7 @@ and so we can compute the gradient (Jacobian matrix) of $y$ with respect to $A$ 
 \newpage
 \section{Acknowledgements}
 
-I'm gonna write some acknowledgements here for my final draft
+Pending
 
 \newpage 
 
