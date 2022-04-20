@@ -15,9 +15,11 @@
 #   Output it all to a CSV.
 # TODO: Function that computes, for any one run, the number of
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import seaborn as sns
 
 from experiment import experiment_data_generation
 from glob import glob
@@ -37,6 +39,7 @@ def generate_data():
         c_values=c, N_values=N, T_values=T, num_each=neach, prefix="error"
     )
 
+sns.set(font_scale=1.2)
 
 # ---------------------------
 # Computing the Optimizations
@@ -398,7 +401,7 @@ def error_bars_params_improved(show: bool = False, save_path: str = None):
     fig.update_layout(
         font_family="Glacial Indifference",
         font_color="black",
-        font_size=18,
+        font_size=28,
         yaxis_title="Number of parameters improved",
         xaxis_title="Value of c",
         legend_title_font_color="black",
@@ -409,12 +412,12 @@ def error_bars_params_improved(show: bool = False, save_path: str = None):
         fig.show()
 
     if save_path is not None:
-        fig.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+        fig.write_image(save_path, height=1000, width=1400, scale=2, format="png")
 
     return fig
 
 
-def heatmap_errors(show: bool = False, save_path: str = None):
+def heatmap_errors(show: bool = False, save_path: str = None, seaborn: bool = False):
     # Load results from experiment c=1, T=1000, N=10
     # Trial number 2 (index 1)
     fname = "experiment-outputs/error_N10_c1_T1000_Ac_3_result.npz"
@@ -437,13 +440,29 @@ def heatmap_errors(show: bool = False, save_path: str = None):
 
     hm3 = go.Figure(data=go.Heatmap(z=error_optim - error_guess))
 
-    if show:
+    if show and not seaborn:
         hm1.show()
         hm2.show()
         hm3.show()
 
+    if seaborn:
+        colorbar = {'label': 'Change in Parameter Error', "orientation": "vertical", }
+        hm_sns = sns.heatmap(
+            data=error_optim - error_guess,
+            vmin=-0.3,
+            vmax=0.3,
+            linewidths=0.5,
+            cmap="twilight",
+            cbar_kws=colorbar
+        )
+        if show:
+            plt.show()
+
     if save_path is not None:
-        hm3.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+        if not seaborn:
+            hm3.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+        else:
+            hm_sns.figure.savefig(save_path, dpi=300, pad_inches=0)
 
     return hm1, hm2, hm3
 
@@ -458,7 +477,9 @@ def main():
     error_bars_params_improved(
         show=False, save_path="figures/error_bars_num_params_improved.png"
     )
-    heatmap_errors(show=False, save_path="figures/heatmap_improved_params.png")
+    heatmap_errors(
+        show=True, save_path="figures/heatmap_improved_params.png", seaborn=True
+    )
 
 
 if __name__ == "__main__":

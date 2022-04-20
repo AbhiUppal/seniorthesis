@@ -3,14 +3,17 @@
 # For this experiment, we just use the data from one of the runs of the error analysis code
 # File of choice: experiment-data/error_N10_c1_T1000_1.npz
 
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import seaborn as sns
 
 from glob import glob
 from optim_single import optim, likelihood
 from typing import Union, Callable
+
+sns.set(font_scale=1.2)
 
 
 def one_optim(
@@ -188,36 +191,72 @@ def data_to_npz():
 # ------------------
 
 
-def heatmap_sd_guesses(show: bool = False, save_path: str = None):
+def heatmap_sd_guesses(
+    show: bool = False, save_path: str = None, seaborn: bool = False
+):
     fname = "experiment-results/global_hm_matrices.npz"
     result = np.load(fname)
     std_A = result["std_A"]
 
-    hm = go.Figure(data=go.Heatmap(z=std_A))
+    if not seaborn:
+        hm = go.Figure(data=go.Heatmap(z=std_A))
+        if show:
+            hm.show()
+        if save_path is not None:
+            hm.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+    else:
+        colorbar = {
+            "label": "Parameter Standard Deviation",
+            "orientation": "vertical",
+        }
+        hm_sns = sns.heatmap(
+            data=std_A,
+            vmin=0,
+            vmax=0.5,
+            linewidths=0.5,
+            cmap="twilight",
+            cbar_kws=colorbar,
+        )
+        if show:
+            plt.show()
+        if save_path is not None:
+            hm_sns.figure.savefig(save_path, dpi=300, pad_inches=0)
 
-    if show:
-        hm.show()
-
-    if save_path is not None:
-        hm.write_image(save_path, height=1080, width=1920, scale=2, format="png")
-
-    return hm
+    return hm if not seaborn else hm_sns
 
 
-def heatmap_mean_minus_true(show: bool = False, save_path: str = None):
+def heatmap_mean_minus_true(
+    show: bool = False, save_path: str = None, seaborn: bool = False
+):
     fname = "experiment-results/global_hm_matrices.npz"
     result = np.load(fname)
     diff = result["mean_A"] - result["true_A"]
 
-    hm = go.Figure(data=go.Heatmap(z=diff))
+    if not seaborn:
+        hm = go.Figure(data=go.Heatmap(z=diff))
+        if show:
+            hm.show()
+        if save_path is not None:
+            hm.write_image(save_path, height=1080, width=1920, scale=2, format="png")
+    else:
+        colorbar = {
+            "label": "Error in Mean Inferred Parameter",
+            "orientation": "vertical",
+        }
+        hm_sns = sns.heatmap(
+            data=diff,
+            vmin=-0.7,
+            vmax=0.7,
+            linewidths=0.5,
+            cmap="twilight",
+            cbar_kws=colorbar,
+        )
+        if show:
+            plt.show()
+        if save_path is not None:
+            hm_sns.figure.savefig(save_path, dpi=300, pad_inches=0)
 
-    if show:
-        hm.show()
-
-    if save_path is not None:
-        hm.write_image(save_path, height=1080, width=1920, scale=2, format="png")
-
-    return hm
+    return hm if not seaborn else hm_sns
 
 
 # ----
@@ -226,9 +265,11 @@ def heatmap_mean_minus_true(show: bool = False, save_path: str = None):
 
 
 def main():
-    heatmap_sd_guesses(show=True, save_path="figures/heatmap_sd_guesses.png")
+    heatmap_sd_guesses(
+        show=True, save_path="figures/heatmap_sd_guesses.png", seaborn=True
+    )
     heatmap_mean_minus_true(
-        show=True, save_path="figures/heatmap_average_minus_true.png"
+        show=True, save_path="figures/heatmap_average_minus_true.png", seaborn=True
     )
 
 
