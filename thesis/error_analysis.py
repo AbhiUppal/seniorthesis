@@ -18,6 +18,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
 
@@ -38,6 +39,7 @@ def generate_data():
     experiment_data_generation(
         c_values=c, N_values=N, T_values=T, num_each=neach, prefix="error"
     )
+
 
 sns.set(font_scale=1.2)
 
@@ -248,7 +250,7 @@ def data_to_csv():
             true_likelihoods.append(true_likelihood)
             likelihood_true_temp.append(true_likelihood)
 
-            num_improved = np.sum(error_optim < error_guess)
+            num_improved = np.sum(np.abs(error_optim) < np.abs(error_guess))
             error_guess_norm = np.linalg.norm(error_guess)
             error_optim_norm = np.linalg.norm(error_optim)
             error_guess_temp.append(np.sum(error_guess))
@@ -446,14 +448,17 @@ def heatmap_errors(show: bool = False, save_path: str = None, seaborn: bool = Fa
         hm3.show()
 
     if seaborn:
-        colorbar = {'label': 'Change in Parameter Error', "orientation": "vertical", }
+        colorbar = {
+            "label": "Change in Parameter Error",
+            "orientation": "vertical",
+        }
         hm_sns = sns.heatmap(
-            data=error_optim - error_guess,
+            data=np.abs(error_optim) - np.abs(error_guess),
             vmin=-0.3,
             vmax=0.3,
             linewidths=0.5,
             cmap="twilight",
-            cbar_kws=colorbar
+            cbar_kws=colorbar,
         )
         if show:
             plt.show()
@@ -465,6 +470,54 @@ def heatmap_errors(show: bool = False, save_path: str = None, seaborn: bool = Fa
             hm_sns.figure.savefig(save_path, dpi=300, pad_inches=0)
 
     return hm1, hm2, hm3
+
+
+def convex_and_nonconvex(show: bool = False, save_path: str = None):
+    # Function 1: sin(10x)/x
+    # Function 2: x^2
+
+    x_values = np.linspace(-2, 2, 200)
+    f1_values = [*map(lambda x: np.sin(10 * x) / (x), x_values)]
+    f2_values = [*map(lambda x: x ** 2, x_values)]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=x_values,
+            y=f1_values,
+            mode="lines",
+            name="Nonconvex",
+            line=dict(color="red"),
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=x_values,
+            y=f2_values,
+            mode="lines",
+            name="Convex",
+            line=dict(color="blue"),
+        )
+    )
+
+    fig.update_layout(
+        font_family="Glacial Indifference",
+        font_color="black",
+        font_size=18,
+        xaxis_title="x",
+        legend_title_font_color="black",
+        template="plotly_white",
+    )
+
+    if show:
+        fig.show()
+
+    if save_path is not None:
+        fig.write_image(save_path, height=1000, width=1400, scale=2, format="png")
+
+    return fig
 
 
 # ----
@@ -480,6 +533,7 @@ def main():
     heatmap_errors(
         show=True, save_path="figures/heatmap_improved_params.png", seaborn=True
     )
+    convex_and_nonconvex(show=False, save_path="figures/convexity_example.png")
 
 
 if __name__ == "__main__":
