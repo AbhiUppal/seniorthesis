@@ -792,6 +792,11 @@ INPUT /usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmr10.tfm
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/ExampleGraph.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/ExampleGraph.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/ExampleGraph.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/ExampleGraph.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/ExampleGraph.png
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmti12.tfm
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm
@@ -804,6 +809,11 @@ INPUT /Users/abhiuppal/seniorthesis/writing/Figures/SimpleHetGraph.png
 INPUT /Users/abhiuppal/seniorthesis/writing/Figures/SimpleHetGraph.png
 INPUT /Users/abhiuppal/seniorthesis/writing/Figures/SimpleHetGraph.png
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/StockMST.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/StockMST.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/StockMST.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/StockMST.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/StockMST.png
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmtt12.tfm
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm
@@ -838,6 +848,11 @@ INPUT /Users/abhiuppal/seniorthesis/writing/Figures/error_bars_optim.png
 INPUT /Users/abhiuppal/seniorthesis/writing/Figures/error_bars_optim.png
 INPUT /Users/abhiuppal/seniorthesis/writing/Figures/error_bars_optim.png
 INPUT /Users/abhiuppal/seniorthesis/writing/Figures/error_bars_optim.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/convexity_example.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/convexity_example.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/convexity_example.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/convexity_example.png
+INPUT /Users/abhiuppal/seniorthesis/writing/Figures/convexity_example.png
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm
 INPUT /usr/local/texlive/2021/texmf-dist/fonts/tfm/jknappen/ec/tcti1200.tfm
 INPUT /Users/abhiuppal/seniorthesis/writing/draft.aux
